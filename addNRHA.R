@@ -259,7 +259,7 @@ NRHA.yr$scupWThab=NRHAscup.wt$habitat
 
 
 sppX="Black sea bass"; habX=NRHA.yr %>% dplyr::select(bsbYRhab, bsbSPhab, bsbSMhab, bsbFLhab, bsbWThab, geometry)
-sppX="Scup"; habX=NRHA.yr %>% dplyr::select(scupYRhab, geometry)
+sppX="Scup"; habX=NRHA.yr %>% dplyr::select(scupYRhab, scupSPhab, scupSMhab, scupFLhab, scupWThab, geometry)
 habX %>%
   leaflet() %>%
   addTiles() %>%
