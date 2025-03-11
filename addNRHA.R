@@ -33,6 +33,7 @@ sf::st_layers(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
 aquaculture=sf::st_read(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
 NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) #xmin: -160.7436 ymin: 19.52108 xmax: -66.98481 ymax: 60.83483
 plot(NESaquaculture["biotype"])
+save(NESaquaculture, file="C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator/NESaquaculture.shp")
 
 RIaqua=sf::st_crop(aquaculture, xmin=-71.82, ymin=41.12, xmax=-71.11, ymax=41.74)
 plot(RIaqua["biotype"])
@@ -46,6 +47,7 @@ RIaqua %>%
               
 # NESaqua=sf::st_filter(NESaquaculture, biotype="Shellfish")
 NESaquaculture %>%
+  dplyr::filter(biotype=="Shellfish") %>%
   leaflet() %>%
   addTiles() %>%
   setView(lng = -70, lat = 40, zoom = 5) %>%
@@ -257,6 +259,23 @@ NRHA.yr$scupSMhab=NRHAscup.sm$habitat
 NRHA.yr$scupFLhab=NRHAscup.fl$habitat
 NRHA.yr$scupWThab=NRHAscup.wt$habitat
 
+NRHA.val=NRHA.yr %>% dplyr::select(geometry)
+NRHA.val$bsbYRhab=cut(NRHA.yr$bsbYRhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$bsbSPhab=cut(NRHA.yr$bsbSPhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$bsbSMhab=cut(NRHA.yr$bsbSMhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$bsbFLhab=cut(NRHA.yr$bsbFLhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$bsbWThab=cut(NRHA.yr$bsbWThab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$scupYRhab=cut(NRHA.yr$scupYRhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$scupSPhab=cut(NRHA.yr$scupSPhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$scupSMhab=cut(NRHA.yr$scupSMhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$scupFLhab=cut(NRHA.yr$scupFLhab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+NRHA.val$scupWThab=cut(NRHA.yr$scupWThab, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
+save(NRHA.val, file=paste0(wd,'NRHA.val.rdata'))
+
+# NRHA.yr2=NRHA.yr %>% 
+#   dplyr::mutate(cut( breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High")))
+# 
+# t2=cut(test, breaks=c(-Inf,0,1,2,3), labels = c("None","Low","Medium","High"))
 
 sppX="Black sea bass"; habX=NRHA.yr %>% dplyr::select(bsbYRhab, bsbSPhab, bsbSMhab, bsbFLhab, bsbWThab, geometry)
 sppX="Scup"; habX=NRHA.yr %>% dplyr::select(scupYRhab, scupSPhab, scupSMhab, scupFLhab, scupWThab, geometry)
@@ -341,4 +360,15 @@ NRHAbsb.sp$ID[[int[[1]]]]
 NRHAbsb.sp$habitat[int[[1]]]
 NRHAbsb.sp$cpue[int[[1]]]
 
+hablist=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]], 
+                       NRHA.val$scupSPhab[int[[1]]], 
+                       NRHA.val$scupSMhab[int[[1]]], 
+                       NRHA.val$scupFLhab[int[[1]]], 
+                       NRHA.val$scupWThab[int[[1]]]),
+"Black sea bass"=c(NRHA.val$bsbYRhab[int[[1]]], 
+                      NRHA.val$bsbSPhab[int[[1]]], 
+                      NRHA.val$bsbSMhab[int[[1]]], 
+                      NRHA.val$bsbFLhab[int[[1]]], 
+                      NRHA.val$bsbWThab[int[[1]]]))
+rownames(hablist)=c("Annual", "Spring", "Summer", "Fall", "Winter")
 
