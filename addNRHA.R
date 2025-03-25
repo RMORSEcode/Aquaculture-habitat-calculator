@@ -2,6 +2,12 @@ library(leaflet)
 library(leaflet.extras)
 library(shiny)
 library(shinyBS)
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(mapdata)
+library(sf); sf_use_s2(FALSE)
+
 wd="C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/"
 
 # New England Only, missing RI, no area
@@ -28,12 +34,49 @@ plot(test.shellmgt[[9]])
 plot(sf::st_geometry(test.shellmgt), axes=T)
 plot(test.shellmgt["regClass"])
 
-
+"C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/Habitat/Continental_Margin_Mapping_Program_(CONMAP)/Continental_Margin_Mapping_Program_(CONMAP).shp"
 sf::st_layers(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
 aquaculture=sf::st_read(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
-NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) #xmin: -160.7436 ymin: 19.52108 xmax: -66.98481 ymax: 60.83483
-plot(NESaquaculture["biotype"])
-save(NESaquaculture, file="C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator/NESaquaculture.shp")
+NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
+  dplyr::filter(biotype=="Shellfish") %>% dplyr::mutate(centroid=sf::st_centroid(geometry))
+# sf::st_write(NESaquaculture, file="C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator/NESaquaculture.shp")
+
+
+## CONMAP sediment from USGS (via NY GIS)
+# https://opdgig.dos.ny.gov/maps/NYSDOS::continental-margin-mapping-program-conmap
+# https://woodshole.er.usgs.gov/openfile/of2005-1001/data/conmapsg/conmapsg-faq.htm
+Conmap=sf::st_read(paste0(wd,"Habitat/Continental_Margin_Mapping_Program_(CONMAP)/Continental_Margin_Mapping_Program_(CONMAP).shp"))
+cmap=sf::st_crop(Conmap, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483)
+w <- map_data("worldHires", xlim=c(-78,-68),ylim=c(36.5,45))
+ggplot() + 
+  geom_polygon(data = w, aes(x=long, y = lat, group = group), fill = "grey80") + 
+  geom_sf(data = cmap, aes(fill=factor(SEDNUM))) +
+  coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
+  theme_bw() +
+  ggtitle("CONMAP")
+# with(Conmap, table(SEDIMENT, SEDNUM))
+            # SEDNUM
+#SEDIMENT     1   2   3   4   5   6   7   8   9
+ # br         4   0   0   0   0   0   0   0   0 # Bedrock
+ # cl         0   0   0   0   0   0   3   0   0 # Clay
+ # cl-st/sd   0   0   0   0  51   0   0   0   0 # Clay-silt/sand
+ # gr         0  42   0   0   0   0   0   0   0 # Gravel
+ # gr-sd      0   0 102   0   0   0   0   0   0 # Gravel-sand
+ # sd         0   0   0  39   0   0   0   0   0 # Sand
+ # sd-cl/st   0   0   0   0   0  46   0   0   0 # Sand-clay/silt
+ # sd-st/cl   0   0   0   0   0   0   0  23   0 # Sand-silt/clay
+ # sd/st/cl   0   0   0   0   0   0   0   0  66 # Sand/silt/clay
+# SEDNUM
+# 1 Bedrock
+# 2 Clay
+# 3 Clay-silt/sand
+# 4 Gravel
+# 5 Gravel-sand
+# 6 Sand
+# 7 Sand-clay/silt
+# 8 Sand-silt/clay
+# 9 Sand/silt/clay
+
 
 RIaqua=sf::st_crop(aquaculture, xmin=-71.82, ymin=41.12, xmax=-71.11, ymax=41.74)
 plot(RIaqua["biotype"])
@@ -47,17 +90,99 @@ RIaqua %>%
               
 # NESaqua=sf::st_filter(NESaquaculture, biotype="Shellfish")
 NESaquaculture %>%
-  dplyr::filter(biotype=="Shellfish") %>%
   leaflet() %>%
   addTiles() %>%
   setView(lng = -70, lat = 40, zoom = 5) %>%
   addPolygons(popup = paste("Site:", NESaquaculture$sitename, "<br>", 
+                            "ID:", NESaquaculture$objectid, "<br>",
                             "Type:", NESaquaculture$biotype, "<br>",
                             "Lease status:", NESaquaculture$leasestatu, "<br>",
-                            "Area:", round(NESaquaculture$SHAPE__Are,0)))
+                            "Area:", round(NESaquaculture$SHAPE__Are,0), "<br>",
+                            "Lon, Lat:", NESaquaculture$centroid))
 
+# NEStest=NESaquaculture %>%
+#   dplyr::filter(biotype=="Shellfish")
+  
 ## join NESaquaculture and test.aq
 # newAq=sf::st_join(NESaquaculture, test.aq, join = st_nearest_feature, left = T)
+NEWENGefh=sf::read_sf(paste(wd,"/Habitat/EFH/neweng_efh/neweng_efh.shp",sep=''))
+MIDATLefh=sf::read_sf(paste(wd,"/Habitat/EFH/midatl_efh/midatl_efh.shp",sep=''))
+MIDefh=sf::st_transform(MIDATLefh, "WGS84")
+NEWefh=sf::st_transform(NEWENGefh, "WGS84")
+BSBefh=MIDefh %>% dplyr::filter(SITENAME_L=="Black Sea Bass")
+SCUPefh=MIDefh %>% dplyr::filter(SITENAME_L=="Scup")
+
+BSBefh %>%
+  dplyr::filter(LIFESTAGE=="Larvae") %>%
+  leaflet() %>%
+  addTiles() %>%
+  setView(lng = -70, lat = 40, zoom = 5) %>%
+  addPolygons(popup = paste("Site:", NESaquaculture$sitename, "<br>", 
+                            "ID:", NESaquaculture$objectid, "<br>",
+                            "Type:", NESaquaculture$biotype, "<br>",
+                            "Lease status:", NESaquaculture$leasestatu, "<br>",
+                            "Area:", round(NESaquaculture$SHAPE__Are,0), "<br>",
+                            "Lon, Lat:", NESaquaculture$centroid))
+
+map("worldHires", xlim=c(-78,-68),ylim=c(36.5,45), fill=T,border=0,col="gray70")
+map.axes(las=1)
+BSBefh %>%
+  dplyr::filter(LIFESTAGE=="Larvae") %>%
+  ggplot2(., geometry, col='green', add=T) #BSB Juv
+
+plot(MIDefh$geometry[40], col='blue', add=T) #BSB adult
+plot(MIDefh$geometry[3], col='red', add=T) # BSB eggs
+
+# bbox <- make_bbox(lon=c(-78,-68),lat=c(36.5,45))
+# map_big <- get_map(location = bbox, maptype = "terrain", source = "google")
+w <- map_data("worldHires", xlim=c(-78,-68),ylim=c(36.5,45))
+ggplot() + 
+  geom_polygon(data = w, aes(x=long, y = lat, group = group), fill = "grey80") + 
+  geom_sf(data = BSBefh, aes(fill=factor(LIFESTAGE))) +
+  coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
+  theme_bw() +
+  ggtitle("BSB EFH")
+
+ggplot() + 
+  geom_polygon(data = w, aes(x=long, y = lat, group = group), fill = "grey80") + 
+  geom_sf(data = SCUPefh, aes(fill=factor(LIFESTAGE))) +
+  coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
+  theme_bw() +
+  ggtitle("Scup EFH")
+
+ggplot() + 
+geom_polygon(data = w, aes(x=long, y = lat, group = group), fill = "grey80") + 
+geom_sf(data = BSBefh %>% dplyr::filter(LIFESTAGE=="Adult"), fill='green') +
+coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
+theme_bw()  
+
+ggplot() + 
+  geom_polygon(data = w, aes(x=long, y = lat, group = group), fill = "grey80") + 
+  geom_sf(data = BSBefh %>% dplyr::filter(LIFESTAGE=="Juvenile"), fill='lightblue') +
+  coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
+  theme_bw()+ 
+  ggtitle("BSB Juv EFH")
+
+ggplot() + 
+  geom_polygon(data = w, aes(x=long, y = lat, group = group), fill = "grey80") + 
+  geom_sf(data = SCUPefh %>% dplyr::filter(LIFESTAGE=="Juvenile"), fill='lightblue') +
+  coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
+  theme_bw()+ 
+  ggtitle("Scup Juv EFH")
+
+# checking on EFH at a point
+check=sf::st_point(c(-73.062097, 41.189598)) # Milford dense cage farm
+check=sf::st_point(c(-74.302611, 39.603333)) # Rose Cove
+int <- sf::st_intersects(check, MIDefh$geometry)
+x=MIDefh$SITENAME_L[int[[1]]]
+y=MIDefh$LIFESTAGE[int[[1]]]
+for(i in 1:length(int[[1]])){
+  print(paste(y[i],x[i], sep=' '))
+}
+
+
+intc <- sf::st_intersects(check, Conmap$geometry)
+Conmap$SEDIMENT[intc[[1]]]
 
 
 ## Northeast Regional Marine Fish Habitat Assessment
