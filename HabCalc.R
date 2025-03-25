@@ -31,49 +31,33 @@ ui <- page_fluid(
   leafletOutput("mymap", width="100%", height=400),
   ## Location table
   tableOutput('loctable'),
-  helpText(h6("Average sediment size class at selected site:")),
+  helpText(h4("Average sediment size class at selected site:")),
   tableOutput('SEDTable'),
-  helpText(h6("Essential Fish Habitat (EFH) at selected site:")),
+  helpText(h4("Essential Fish Habitat (EFH) at selected site:")),
   tableOutput('EFHTable'),
-  helpText(h6("Habitat quality for black sea bass and scup at selected site:")),
+  helpText(h4("Habitat quality for black sea bass and scup at selected site:")),
   tableOutput('habTable')
 )
 
 server <- function(input, output) {
+  ## Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
   load("C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator/NRHA.val.rdata")
   
+  ## read in aquaculture shapefile for northeast USA
   aquaculture=sf::st_read(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
   NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
     dplyr::filter(biotype=="Shellfish") %>%
     dplyr::mutate(centroid=sf::st_centroid(geometry))
   
-  # output$mymap <- renderLeaflet({
-  #   NESaquaculture %>%
-  #     leaflet(height="50%") %>%
-  #     addTiles() %>%
-  #     setView(lng = -70, lat = 40, zoom = 5) %>%
-  #     addPolygons(layerID = NESaquaculture$objectid,
-  #                 popup = paste("Site:", NESaquaculture$sitename, "<br>", 
-  #                               "Type:", NESaquaculture$biotype, "<br>",
-  #                               "Lease status:", NESaquaculture$leasestatu, "<br>",
-  #                               "Area:", round(NESaquaculture$SHAPE__Are,0), "<br>",
-  #                               "Lon, Lat:", NESaquaculture$centroid)) %>%
-  #     setView(lng = -70, lat = 40, zoom = 5) %>%
-  #     addDrawToolbar(
-  #       targetGroup='Selected',
-  #       polylineOptions=FALSE,
-  #       polygonOptions=FALSE,
-  #       markerOptions = T,
-  #       rectangleOptions =F,
-  #       circleOptions = F,
-  #       circleMarkerOptions = F,
-  #       editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
-  # })
-  
+  # read in EFH shapefile and filter to just scup and black sea bass
+  MIDATLefh=sf::read_sf(paste(wd,"/Habitat/EFH/midatl_efh/midatl_efh.shp",sep=''))
+  MIDefh=sf::st_transform(MIDATLefh, "WGS84") %>% dplyr::filter(SITENAME_L=="Black Sea Bass"| SITENAME_L=="Scup")
+
+  ## set layerId for leaflet map
   objectID=NESaquaculture$objectid
   
   output$mymap <- renderLeaflet({
-      leaflet(height="50%") %>%
+    leaflet(height="50%") %>%
       addTiles() %>%
       setView(lng = -70, lat = 40, zoom = 5) %>%
       addPolygons(data=NESaquaculture,
@@ -102,17 +86,18 @@ server <- function(input, output) {
     if (is.null(click))
       return()
     RV$Clicks<-click$id
-    print(paste("Shapefile ID is: ", RV$Clicks))
+    # print(paste("Shapefile ID is: ", RV$Clicks))
     
+    ## parse to lat/long based on LayerId
     Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1]
     Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2]
-  
+    Areax=NESaquaculture$SHAPE__Are[[which(NESaquaculture$objectid==RV$Clicks)]][1]
+    
+    
     output$loctable <- renderTable(
-      # data.frame("Lon"=click$centroid[[layerID]][1], "Lat"=click$centroid[[layerID]][2]),
-      # data.frame("Lon"=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1],
-      #            "Lat"=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2]),
       data.frame("Lon"=Lonx,
-                 "Lat"=Latx),
+                 "Lat"=Latx,
+                 "Area"=Areax),
       striped = T,
       hover = F,
       bordered = T,
@@ -125,7 +110,7 @@ server <- function(input, output) {
       na = "NA",
       quoted = FALSE
     )
-
+    
     output$habTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       int <- sf::st_intersects(check, NRHA.val$geometry)
@@ -145,7 +130,7 @@ server <- function(input, output) {
     rownames = TRUE,
     colnames = TRUE,
     )
-
+    
     output$EFHTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       intefh <- sf::st_intersects(check, MIDefh$geometry)
@@ -162,7 +147,7 @@ server <- function(input, output) {
     rownames = F,
     colnames = TRUE,
     )
-
+    
     output$SEDTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       intc <- sf::st_intersects(check, Conmap$geometry)
@@ -175,7 +160,7 @@ server <- function(input, output) {
     )
   })
   
-  # 
+  # ## add point to map if shapefile does not show location of farm (need switch)
   # observeEvent(input$mymap_draw_new_feature,{
   #   feature <- input$mymap_draw_new_feature
   #   
