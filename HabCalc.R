@@ -31,7 +31,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                   tabsetPanel(
                     type = "tabs",
                     tabPanel("Habitat Calculator", 
-                             tags$img(src='white_swoosh_cage_500pxH.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
+                             # tags$img(src='meatball_BSB_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
+                             tags$img(src='white_swoosh_fish_500pxH_1650pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
                              titlePanel(h1("Habitat Calculator"), windowTitle = "Aquaculture Nutrient Removal Calculator"),
                              helpText(br()),
                              
@@ -71,7 +72,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                     ),
                     
                     tabPanel("About", 
-                             tags$img(src='white_swoosh_hand_left2_500pxH.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and five oysters being held in palm, with additional oysters in the background."),
+                             tags$img(src='meatball_BSB_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and five oysters being held in palm, with additional oysters in the background."),
                              titlePanel(h1("Habitat Calculator"), windowTitle = "Habitat Calculator"),
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
@@ -84,20 +85,21 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                   p(strong("- Essential Fish Habitat for scup and black sea bass"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Bottom (sediment type) classification"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Survey based habitat classification for black sea bass and scup"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  helpText(br()),
-                                  tags$p(
-                                    h4("Background"),
-                                    helpText(strong("Oyster Farms Create Fish Habitat"), style = "font-size:18px;"),
-                                    p("Oyster farms create habitat for local fish species, serving an ecological role similar to oyster reefs. Some of these fish are commercially and recreationally important species. Fish exhibit natural behaviors on oyster farms, including feeding, hiding from predators, looking for mates, spawning, and schooling. Oyster farms may also serve as a nursery habitat for young fish."),
-                                    tags$img(src='FarmHabitat_1500_1000.png', width = "100%", alt="This illustration shows an oyster cage filled with oysters and growing algae and other fouling organisms in the foreground. Surrounding the cage are fish displaying behaviors of habitat usage like feeding, courtship and spawning, use as shelter, and use as a nursery. There are multiple cages in the background as typically found on an oyster farm."),
-                                    helpText(br()),
-                                  )
+                             ),
+                             helpText(br()),
+                             tags$p(
+                               h4("Background"),
+                               helpText(strong("Oyster Farms Create Fish Habitat"), style = "font-size:18px;"),
+                               p("Oyster farms create habitat for local fish species, serving an ecological role similar to oyster reefs. Some of these fish are commercially and recreationally important species. Fish exhibit natural behaviors on oyster farms, including feeding, hiding from predators, looking for mates, spawning, and schooling. Oyster farms may also serve as a nursery habitat for young fish."),
+                               tags$img(src='FarmHabitat_1500_1000.png', width = "100%", alt="This illustration shows an oyster cage filled with oysters and growing algae and other fouling organisms in the foreground. Surrounding the cage are fish displaying behaviors of habitat usage like feeding, courtship and spawning, use as shelter, and use as a nursery. There are multiple cages in the background as typically found on an oyster farm."),
+                               helpText(br()),
                              )
-                             
                     )
+                    
                   )
                 )
 )
+
 
 
 
