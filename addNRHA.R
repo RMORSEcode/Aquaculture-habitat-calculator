@@ -76,7 +76,16 @@ ggplot() +
 # 7 Sand-clay/silt
 # 8 Sand-silt/clay
 # 9 Sand/silt/clay
-
+Conmap$SEDNAME=NA
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='br')]='Bedrock'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='cl')]='Clay'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='cl-st/sd')]='Clay-silt/sand'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='gr')]='Gravel'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='gr-sd')]='Gravel-sand'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd')]='Sand'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-cl/st')]='Sand-clay/silt'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-st/cl')]='Sand-silt/clay'
+Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd/st/cl')]='Sand/silt/clay'
 
 RIaqua=sf::st_crop(aquaculture, xmin=-71.82, ymin=41.12, xmax=-71.11, ymax=41.74)
 plot(RIaqua["biotype"])

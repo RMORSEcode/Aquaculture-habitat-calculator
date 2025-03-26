@@ -44,14 +44,19 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              
                              ### 1 FARM INFORMATION ###
+                             ## Farm Site
                              helpText(h3("1) Farm Information")),
-                             ## Name
                              textAreaInput("farmname", div(strong("Farm Name:"), " Please enter the name of the oyster farm"),value = "", width="100%", rows=2, placeholder = NULL),
                              helpText(br()),
                              textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=2, placeholder = NULL),
                              helpText(br()),
+                             ## Tides and Depth
+                             selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
+                             helpText(br()),
+                             textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=2, placeholder = NULL),
+                             helpText(br()), 
                              ## Gear - Culture Method
-                             selectInput("gear", div(strong("Culture Method:")," Select the gear type primarily used for growing oysters, or select 'On-Bottom' for no gear"), c("Floating", "Off-bottom", "On-Bottom"), width="100%"),
+                             selectInput("gear", div(strong("Culture Method:")," Select the gear type primarily used for growing oysters, or select 'On-Bottom' for no gear"), c("Off-bottom cages", "Floating cages", "On-Bottom"), width="100%"),
                              helpText(br()),
                              
                              ### 2 LOCATION ###
@@ -84,7 +89,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                   p("And by selecting the location of a farm on a GIS layer, information is provided on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Essential Fish Habitat for scup and black sea bass"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Bottom (sediment type) classification"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p(strong("- Survey based habitat classification for black sea bass and scup"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- Survey-based habitat classification for black sea bass and scup"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                              ),
                              helpText(br()),
                              tags$p(
@@ -112,13 +117,29 @@ server <- function(input, output) {
   # aquaculture=sf::st_read(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
   aquaculture=sf::st_read("Aquaculture.shp")
   NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
+    # st_transform(., +proj=laea +lon_0=-71.8945313 +lat_0=40.5845014 +datum=WGS84 +units=m +no_defs) %>%
     dplyr::filter(biotype=="Shellfish") %>%
     dplyr::mutate(centroid=sf::st_centroid(geometry))
   
   # read in EFH shapefile and filter to just scup and black sea bass
   # MIDATLefh=sf::read_sf(paste(wd,"/Habitat/EFH/midatl_efh/midatl_efh.shp",sep=''))
   MIDATLefh=sf::read_sf("midatl_efh.shp")
-  MIDefh=sf::st_transform(MIDATLefh, "WGS84") %>% dplyr::filter(SITENAME_L=="Black Sea Bass"| SITENAME_L=="Scup")
+  MIDefh=sf::st_transform(MIDATLefh, "WGS84") %>% 
+    # st_transform(., +proj=laea +lon_0=-71.8945313 +lat_0=40.5845014 +datum=WGS84 +units=m +no_defs) %>%
+    dplyr::filter(SITENAME_L=="Black Sea Bass"| SITENAME_L=="Scup")
+  
+  # read in ConMap sediment classification shapefile
+  Conmap=sf::st_read("Continental_Margin_Mapping_Program_(CONMAP).shp")
+  Conmap$SEDNAME=NA
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='br')]='Bedrock'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='cl')]='Clay'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='cl-st/sd')]='Clay-silt/sand'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='gr')]='Gravel'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='gr-sd')]='Gravel-sand'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd')]='Sand'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-cl/st')]='Sand-clay/silt'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-st/cl')]='Sand-silt/clay'
+  Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd/st/cl')]='Sand/silt/clay'
   
   ## set layerId for leaflet map
   objectID=NESaquaculture$objectid
@@ -218,7 +239,7 @@ server <- function(input, output) {
     output$SEDTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       intc <- sf::st_intersects(check, Conmap$geometry)
-      sed=data.frame(Conmap$SEDIMENT[intc[[1]]])
+      sed=data.frame(Conmap$SEDNAME[intc[[1]]])
       colnames(sed)="Sediment Classification"
       sed
     },
