@@ -3,6 +3,7 @@ library(bslib)
 library(leaflet)
 library(leaflet.extras)
 library(sf); sf_use_s2(FALSE)
+library(gh)
 
 # ui <- page_fluid(
 #   navset_pill( 
@@ -46,22 +47,39 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ### 1 FARM INFORMATION ###
                              ## Farm Site
                              helpText(h3("1) Farm Information")),
-                             textAreaInput("farmname", div(strong("Farm Name:"), " Please enter the name of the oyster farm"),value = "", width="100%", rows=2, placeholder = NULL),
-                             helpText(br()),
-                             textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=2, placeholder = NULL),
-                             helpText(br()),
+                             textAreaInput("farmname", div(strong("Farm Name:"), " Please enter the name of the oyster farm"),value = "", width="100%", rows=1, placeholder = NULL),
+                             # helpText(br()),
+                             textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=1, placeholder = NULL),
+                             # helpText(br()),
                              ## Tides and Depth
                              selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
-                             helpText(br()),
-                             textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=2, placeholder = NULL),
-                             helpText(br()), 
+                             # helpText(br()),
+                             textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=1, placeholder = NULL),
+                             # helpText(br()), 
                              ## Gear - Culture Method
                              selectInput("gear", div(strong("Culture Method:")," Select the gear type primarily used for growing oysters, or select 'On-Bottom' for no gear"), c("Off-bottom cages", "Floating cages", "On-Bottom"), width="100%"),
+                             # helpText(br()),
+                             # numericInput("ncages", div(strong("Quantity of gear:")," Please enter the average number of gear typically in the water"), 0, min=0, max=10000, width="100%"),
+                             # helpText(br()),
+                             # numericInput("cageL", div(strong("Gear dimensions: Length (ft):")," Please enter the length of the gear in feet"), 0, min=0, max=30, width="100%"),
+                             # helpText(br()),
+                             # numericInput("cageW", div(strong("Gear dimensions: Width (ft):")," Please enter the width of the gear in feet"), 0, min=0, max=30, width="100%"),
+                             # helpText(br()),
+                             # numericInput("cageH", div(strong("Gear dimensions: Height (ft):")," Please enter the height of the gear in feet"), 0, min=0, max=30, width="100%"),
                              helpText(br()),
-                             
+                             helpText(h5("Gear Quantity and Dimensions")),
+                             helpText("Please enter the average number of gear typically in the water, followed by the gear dimentions length, width, and height in feet"),
+                             fluidRow(
+                               column(3, numericInput("cageN", strong("Number of Cages"), 0, min=0, max=1000)),
+                               column(3, numericInput("cageL", strong("Length of Gear (ft)"), 0, min=0, max=10)),
+                               column(3, numericInput("cageW", strong("Width of Gear(ft)"), 0, min=0, max=10)),
+                               column(3, numericInput("cageH", strong("Height of Gear (ft)"), 0, min=0, max=10)),
+                             ),
                              ### 2 LOCATION ###
                              helpText(h3("2) Farm Location")),
-                             helpText(h4("Farm Location: "),"On the GIS map, please zoom in to the farm location, then click on the appropriate GIS shape to record the coordinates.", style = "font-size:18px;"),
+                             helpText(h4("Farm Location: "),"On the GIS map, please scroll or pinch to zoom in to the farm location, then click on the appropriate GIS shape for your site to record the coordinates.
+                                      If your site is not shown, you can drop a marker pin by clicking once on the marker pin icon and and then once again on your site to record the coordinates. To remove a marker, 
+                                      click on the trash icon and then the errant marker", style = "font-size:18px;"),
                              # helpText(h4("Approximate Coordinates")),
                              # helpText(h6("Please scroll or pinch to zoom to the farm location, then click once on the marker pin and select the site to record the coordinates. To remove a marker, click on the trash icon and then the errant marker", style = "font-size:18px;"),
                              leafletOutput("mymap", width="100%", height=400),
@@ -73,7 +91,9 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(h5("Essential Fish Habitat (EFH) at selected site:")),
                              tableOutput('EFHTable'),
                              helpText(h5("Habitat quality for black sea bass and scup at selected site:")),
-                             tableOutput('habTable')
+                             tableOutput('habTable'),
+                             helpText(h5("Structured habitat area provided to black sea bass and scup at selected site:")),
+                             tableOutput('AreaTable'),
                     ),
                     
                     tabPanel("About", 
@@ -108,27 +128,47 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
 
 
 
-server <- function(input, output) {
-  ## Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
-  # load("C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator/NRHA.val.rdata")
+server <- function(input, output, session) {
+  session$onSessionEnded(function() {
+    stopApp()
+  })
+  ### Add github version to top of page
+  output$githubversion <- renderText({
+    releases <- gh("GET /repos/{owner}/{repo}/releases", 
+                   owner = "RMORSEcode",
+                   repo = "Aquaculture-habitat-calculator")
+    releases[[1]][["name"]]
+  })
+  
+  ### Calculate area and volume of gear, modify by EFH overlap and survey presence
+  Rarea<-reactive({
+    AreaN=data.frame(input$cageN * input$cageL * input$cageW)
+    colnames(AreaN)='Structured Habitat'
+    # AreaN$`Volume Added`=AreaN*input$cageH
+    AreaN
+  })
+  output$AreaTable <- 
+    renderTable({
+      Rarea()
+    })
+  
+  ### Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
   load("NRHA.val.rdata")
   
-  ## read in aquaculture shapefile for northeast USA
-  # aquaculture=sf::st_read(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
+  ### read in aquaculture shapefile for northeast USA
   aquaculture=sf::st_read("Aquaculture.shp")
   NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
     # st_transform(., +proj=laea +lon_0=-71.8945313 +lat_0=40.5845014 +datum=WGS84 +units=m +no_defs) %>%
     dplyr::filter(biotype=="Shellfish") %>%
     dplyr::mutate(centroid=sf::st_centroid(geometry))
   
-  # read in EFH shapefile and filter to just scup and black sea bass
-  # MIDATLefh=sf::read_sf(paste(wd,"/Habitat/EFH/midatl_efh/midatl_efh.shp",sep=''))
+  ### read in EFH shapefile and filter to just scup and black sea bass
   MIDATLefh=sf::read_sf("midatl_efh.shp")
   MIDefh=sf::st_transform(MIDATLefh, "WGS84") %>% 
     # st_transform(., +proj=laea +lon_0=-71.8945313 +lat_0=40.5845014 +datum=WGS84 +units=m +no_defs) %>%
     dplyr::filter(SITENAME_L=="Black Sea Bass"| SITENAME_L=="Scup")
   
-  # read in ConMap sediment classification shapefile
+  ### read in ConMap sediment classification shapefile
   Conmap=sf::st_read("Continental_Margin_Mapping_Program_(CONMAP).shp")
   Conmap$SEDNAME=NA
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='br')]='Bedrock'
@@ -141,7 +181,7 @@ server <- function(input, output) {
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-st/cl')]='Sand-silt/clay'
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd/st/cl')]='Sand/silt/clay'
   
-  ## set layerId for leaflet map
+  ### set layerId for leaflet map for click to add lat/lon
   objectID=NESaquaculture$objectid
   
   output$mymap <- renderLeaflet({
@@ -174,14 +214,12 @@ server <- function(input, output) {
     if (is.null(click))
       return()
     RV$Clicks<-click$id
-    # print(paste("Shapefile ID is: ", RV$Clicks))
-    
     ## parse to lat/long based on LayerId
     Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1]
     Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2]
     Areax=NESaquaculture$SHAPE__Are[[which(NESaquaculture$objectid==RV$Clicks)]][1]
     
-    
+    ### Lat Long and area of lease site from GIS
     output$loctable <- renderTable(
       data.frame("Lon"=Lonx,
                  "Lat"=Latx,
@@ -199,6 +237,7 @@ server <- function(input, output) {
       quoted = FALSE
     )
     
+    ### Survey presence at selected coordinates
     output$habTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       int <- sf::st_intersects(check, NRHA.val$geometry)
@@ -219,6 +258,7 @@ server <- function(input, output) {
     colnames = TRUE,
     )
     
+    ### Essential Fish Habitat at selected coordinates
     output$EFHTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       intefh <- sf::st_intersects(check, MIDefh$geometry)
@@ -236,6 +276,7 @@ server <- function(input, output) {
     colnames = TRUE,
     )
     
+    ### Sediment type at selected coordinates
     output$SEDTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       intc <- sf::st_intersects(check, Conmap$geometry)
@@ -248,73 +289,78 @@ server <- function(input, output) {
     )
   })
   
-  # ## add point to map if shapefile does not show location of farm (need switch)
-  # observeEvent(input$mymap_draw_new_feature,{
-  #   feature <- input$mymap_draw_new_feature
-  #   
-  #   output$loctable <- renderTable(
-  #     data.frame("Lon"=feature$geometry$coordinates[[1]],"Lat"=feature$geometry$coordinates[[2]]),
-  #     striped = T,
-  #     hover = F,
-  #     bordered = T,
-  #     spacing = c("s", "xs", "m", "l"),
-  #     width = "auto",
-  #     align = NULL,
-  #     rownames = FALSE,
-  #     colnames = TRUE,
-  #     digits = 4,
-  #     na = "NA",
-  #     quoted = FALSE
-  #   )
-  #   
-  #   output$habTable = renderTable({
-  #     check=sf::st_point(c(feature$geometry$coordinates[[1]], feature$geometry$coordinates[[2]]))
-  #     int <- sf::st_intersects(check, NRHA.val$geometry)
-  #     habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
-  #                              NRHA.val$scupSPhab[int[[1]]],
-  #                              NRHA.val$scupSMhab[int[[1]]],
-  #                              NRHA.val$scupFLhab[int[[1]]],
-  #                              NRHA.val$scupWThab[int[[1]]]),
-  #                     "Black.sea.bass"=c(NRHA.val$bsbYRhab[int[[1]]],
-  #                                        NRHA.val$bsbSPhab[int[[1]]],
-  #                                        NRHA.val$bsbSMhab[int[[1]]],
-  #                                        NRHA.val$bsbFLhab[int[[1]]],
-  #                                        NRHA.val$bsbWThab[int[[1]]]))
-  #     rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
-  #     habt
-  #   },
-  #   rownames = TRUE,
-  #   colnames = TRUE,
-  #   )
-  #   
-  #   output$EFHTable = renderTable({
-  #     check=sf::st_point(c(feature$geometry$coordinates[[1]], feature$geometry$coordinates[[2]]))
-  #     intefh <- sf::st_intersects(check, MIDefh$geometry)
-  #     x=MIDefh$SITENAME_L[intefh[[1]]]
-  #     y=MIDefh$LIFESTAGE[intefh[[1]]]
-  #     efh=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
-  #     for(i in 1:length(intefh[[1]])){
-  #       efh[i,1]=paste(y[i],x[i], sep=' ')
-  #       # print(paste(y[i],x[i], sep=' '))
-  #     }
-  #     colnames(efh)="Essential Fish Habitat"
-  #     efh
-  #   },
-  #   rownames = F,
-  #   colnames = TRUE,
-  #   )
-  #   
-  #   output$SEDTable = renderTable({
-  #     check=sf::st_point(c(feature$geometry$coordinates[[1]], feature$geometry$coordinates[[2]]))
-  #     intc <- sf::st_intersects(check, Conmap$geometry)
-  #     sed=data.frame(Conmap$SEDIMENT[intc[[1]]])
-  #     colnames(sed)="Sediment Classification"
-  #     sed
-  #   },
-  #   rownames = F,
-  #   colnames = TRUE,
-  #   )
-  # })
+  ### Drop a marker to use for coordinates instead of Click if GIS aquaculture layer does not include farm
+  observeEvent(input$mymap_draw_new_feature,{
+    feature <- input$mymap_draw_new_feature
+    Lonx=feature$geometry$coordinates[[1]]
+    Latx=feature$geometry$coordinates[[2]]
+    Areax=NA
+    output$loctable <- renderTable(
+      data.frame("Lon"=Lonx,
+                 "Lat"=Latx,
+                 "Area"=Areax),
+      striped = T,
+      hover = F,
+      bordered = T,
+      spacing = c("s", "xs", "m", "l"),
+      width = "auto",
+      align = NULL,
+      rownames = FALSE,
+      colnames = TRUE,
+      digits = 4,
+      na = "NA",
+      quoted = FALSE
+    )
+    ### marker based coordinates for survey presence (supersedes click)
+    output$habTable = renderTable({
+      check=sf::st_point(c(Lonx, Latx))
+      int <- sf::st_intersects(check, NRHA.val$geometry)
+      habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
+                               NRHA.val$scupSPhab[int[[1]]],
+                               NRHA.val$scupSMhab[int[[1]]],
+                               NRHA.val$scupFLhab[int[[1]]],
+                               NRHA.val$scupWThab[int[[1]]]),
+                      "Black.sea.bass"=c(NRHA.val$bsbYRhab[int[[1]]],
+                                         NRHA.val$bsbSPhab[int[[1]]],
+                                         NRHA.val$bsbSMhab[int[[1]]],
+                                         NRHA.val$bsbFLhab[int[[1]]],
+                                         NRHA.val$bsbWThab[int[[1]]]))
+      rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
+      habt
+    },
+    rownames = TRUE,
+    colnames = TRUE,
+    )
+    ### marker based coordinates for EFH (supersedes click)
+    output$EFHTable = renderTable({
+      check=sf::st_point(c(Lonx, Latx))
+      intefh <- sf::st_intersects(check, MIDefh$geometry)
+      x=MIDefh$SITENAME_L[intefh[[1]]]
+      y=MIDefh$LIFESTAGE[intefh[[1]]]
+      efh=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+      for(i in 1:length(intefh[[1]])){
+        efh[i,1]=paste(y[i],x[i], sep=' ')
+        # print(paste(y[i],x[i], sep=' '))
+      }
+      colnames(efh)="Essential Fish Habitat"
+      efh
+    },
+    rownames = F,
+    colnames = TRUE,
+    )
+    ### marker based coordinates for sediments (supersedes click)
+    output$SEDTable = renderTable({
+      check=sf::st_point(c(Lonx, Latx))
+      intc <- sf::st_intersects(check, Conmap$geometry)
+      sed=data.frame(Conmap$SEDNAME[intc[[1]]])
+      colnames(sed)="Sediment Classification"
+      sed
+    },
+    rownames = F,
+    colnames = TRUE,
+    )
+
+  })
 }
 
 shinyApp(ui = ui, server = server)
