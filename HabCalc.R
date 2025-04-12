@@ -77,7 +77,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ),
                              ### 2 LOCATION ###
                              helpText(h3("2) Farm Location")),
-                             helpText(h4("Farm Location: "),"On the GIS map, please scroll or pinch to zoom in to the farm location, then click on the appropriate GIS shape for your site to record the coordinates.
+                             helpText(h4("Farm Location: "),"Please scroll or pinch to zoom in to the farm location on the map, then click on the appropriate polygon for your site to record the coordinates.
                                       If your site is not shown, you can drop a marker pin by clicking once on the marker pin icon and and then once again on your site to record the coordinates. To remove a marker, 
                                       click on the trash icon and then the errant marker", style = "font-size:18px;"),
                              # helpText(h4("Approximate Coordinates")),
@@ -90,9 +90,9 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tableOutput('SEDTable'),
                              helpText(h5("Essential Fish Habitat (EFH) at selected site:")),
                              tableOutput('EFHTable'),
-                             helpText(h5("Habitat quality for black sea bass and scup at selected site:")),
+                             helpText(h5("Survey-based habitat quality for black sea bass and scup at selected site:")),
                              tableOutput('habTable'),
-                             helpText(h5("Structured habitat area provided to black sea bass and scup at selected site:")),
+                             helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
                     ),
                     
@@ -118,6 +118,9 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                p("Oyster farms create habitat for local fish species, serving an ecological role similar to oyster reefs. Some of these fish are commercially and recreationally important species. Fish exhibit natural behaviors on oyster farms, including feeding, hiding from predators, looking for mates, spawning, and schooling. Oyster farms may also serve as a nursery habitat for young fish."),
                                tags$img(src='FarmHabitat_1500_1000.png', width = "100%", alt="This illustration shows an oyster cage filled with oysters and growing algae and other fouling organisms in the foreground. Surrounding the cage are fish displaying behaviors of habitat usage like feeding, courtship and spawning, use as shelter, and use as a nursery. There are multiple cages in the background as typically found on an oyster farm."),
                                helpText(br()),
+                               h6(tags$a(target="_blank", href="https://www.fisheries.noaa.gov/new-england-mid-atlantic/aquaculture/milford-labs-gopro-aquaculture-project",
+                                         "Learn more about the NOAA Milford Lab's GoPro Aquaculture Project here >")
+                               ),
                              )
                     )
                     
@@ -143,8 +146,8 @@ server <- function(input, output, session) {
   ### Calculate area and volume of gear, modify by EFH overlap and survey presence
   Rarea<-reactive({
     AreaN=data.frame(input$cageN * input$cageL * input$cageW)
-    colnames(AreaN)='Structured Habitat'
-    # AreaN$`Volume Added`=AreaN*input$cageH
+    colnames(AreaN)='Square feet added'
+    AreaN$`Cubic feet added`=AreaN*input$cageH
     AreaN
   })
   output$AreaTable <- 

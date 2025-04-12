@@ -10,6 +10,9 @@ library(sf); sf_use_s2(FALSE)
 
 wd="C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/"
 
+# OISST high res monthly mean
+# https://psl.noaa.gov/thredds/ncss/grid/Datasets/noaa.oisst.v2.highres/sst.mon.mean.nc/dataset.html
+
 # New England Only, missing RI, no area
 sf::st_layers(paste0(wd,"Habitat/Aquaculture/Aquaculture.gdb"))
 test.shellmgt=sf::st_read(paste0(wd,"Habitat/Aquaculture/Aquaculture.gdb", layer="ShellfishManagementAreas"))
@@ -34,7 +37,6 @@ plot(test.shellmgt[[9]])
 plot(sf::st_geometry(test.shellmgt), axes=T)
 plot(test.shellmgt["regClass"])
 
-"C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/Habitat/Continental_Margin_Mapping_Program_(CONMAP)/Continental_Margin_Mapping_Program_(CONMAP).shp"
 sf::st_layers(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
 aquaculture=sf::st_read(paste0(wd,"Habitat/Marine Cadastre/Aquaculture.shp"))
 NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
