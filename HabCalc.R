@@ -1,9 +1,12 @@
+# https://test-connect.fisheries.noaa.gov/connect/#/apps/364
+
 library(shiny)
 library(bslib)
 library(leaflet)
 library(leaflet.extras)
 library(sf); sf_use_s2(FALSE)
 library(gh)
+library(shinycssloaders)
 
 # ui <- page_fluid(
 #   navset_pill( 
@@ -48,24 +51,39 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ## Farm Site
                              helpText(h3("1) Farm Information")),
                              textAreaInput("farmname", div(strong("Farm Name:"), " Please enter the name of the oyster farm"),value = "", width="100%", rows=1, placeholder = NULL),
-                             # helpText(br()),
                              textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=1, placeholder = NULL),
-                             # helpText(br()),
+
                              ## Tides and Depth
-                             selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
-                             # helpText(br()),
-                             textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=1, placeholder = NULL),
-                             # helpText(br()), 
-                             ## Gear - Culture Method
-                             selectInput("gear", div(strong("Culture Method:")," Select the gear type primarily used for growing oysters, or select 'On-Bottom' for no gear"), c("Off-bottom cages", "Floating cages", "On-Bottom"), width="100%"),
-                             # helpText(br()),
-                             # numericInput("ncages", div(strong("Quantity of gear:")," Please enter the average number of gear typically in the water"), 0, min=0, max=10000, width="100%"),
-                             # helpText(br()),
-                             # numericInput("cageL", div(strong("Gear dimensions: Length (ft):")," Please enter the length of the gear in feet"), 0, min=0, max=30, width="100%"),
-                             # helpText(br()),
-                             # numericInput("cageW", div(strong("Gear dimensions: Width (ft):")," Please enter the width of the gear in feet"), 0, min=0, max=30, width="100%"),
-                             # helpText(br()),
-                             # numericInput("cageH", div(strong("Gear dimensions: Height (ft):")," Please enter the height of the gear in feet"), 0, min=0, max=30, width="100%"),
+                             # selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
+                             prettyRadioButtons( 
+                               inputId = "tides",
+                               label = div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"),
+                               choices = c("Subtidal", "Intertidal"),
+                               outline = TRUE,
+                               plain = TRUE,
+                               status = "primary",
+                               icon = icon("check")
+                             ),
+                             # textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=1, placeholder = NULL),
+                             numericInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", min=0, max=100),
+
+                             ## Gear - Culture Method, removal, and dimensions
+                             prettyCheckboxGroup(
+                               inputId = "gearGroup",
+                               label = div(strong("Culture Method:"), "Select the gear type primarily used for growing oysters (select all that apply)"),
+                               choices = list("Off-bottom cages" = 1, "Floating cages" = 2, "On-Bottom/No gear" = 3),
+                               outline = TRUE,
+                               plain = TRUE,
+                               status = "primary",
+                               icon = icon("check")
+                             ),
+                             input_switch("switch", "Do you remove gear from the water sesaonally?"), 
+                             conditionalPanel(
+                               condition = "input.switch == true",
+                               selectInput("gearIn", div(strong("Select month gear typically goes into the water:")), c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), width ="100%"),
+                               selectInput("gearOut", div(strong("Select month gear is typically removed from the water:")), c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), width ="100%")
+                             ),
+                             # dateRangeInput("daterange", startview = "decade", div(strong("Date range:"), "Select months gear is in the water")),
                              helpText(br()),
                              helpText(h5("Gear Quantity and Dimensions")),
                              helpText("Please enter the average number of gear typically in the water, followed by the gear dimentions length, width, and height in feet"),
@@ -75,6 +93,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                column(3, numericInput("cageW", strong("Width of Gear(ft)"), 0, min=0, max=10)),
                                column(3, numericInput("cageH", strong("Height of Gear (ft)"), 0, min=0, max=10)),
                              ),
+                             
                              ### 2 LOCATION ###
                              helpText(h3("2) Farm Location")),
                              helpText(h4("Farm Location: "),"Please scroll or pinch to zoom in to the farm location on the map, then click on the appropriate polygon for your site to record the coordinates.
@@ -82,7 +101,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                       click on the trash icon and then the errant marker", style = "font-size:18px;"),
                              # helpText(h4("Approximate Coordinates")),
                              # helpText(h6("Please scroll or pinch to zoom to the farm location, then click once on the marker pin and select the site to record the coordinates. To remove a marker, click on the trash icon and then the errant marker", style = "font-size:18px;"),
-                             leafletOutput("mymap", width="100%", height=400),
+                             leafletOutput("mymap", width="100%", height=400) %>% withSpinner(type=1, size=2, color='#0085CA'), #0085CA #0dc5c1 color.background='white'
                              ## Location table
                              tableOutput('loctable'),
                              helpText(h4("Habitat Information")),
