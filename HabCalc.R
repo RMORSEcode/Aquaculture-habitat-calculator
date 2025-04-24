@@ -7,6 +7,7 @@ library(leaflet.extras)
 library(sf); sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
+library(shinyWidgets)
 
 # ui <- page_fluid(
 #   navset_pill( 
@@ -42,7 +43,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              
                              ### add text box with black border ### #5761C0  style = "border-style: solid; border-color: #C6E6F0#5EB6D9; background-color: #5EB6D9;",
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
-                                  p("This calculator predicts the habitat provided by aquaculture gear to scup and black sea bass. This tool applies to oyster farms located within the geographic range of North Carolina to Maine, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
+                                  p("This calculator predicts the habitat provided by aquaculture gear to scup and black sea bass. This tool applies to oyster farms located within the geographic range of Virginia to New Hampshire, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
                                   p("To use the tool, please fill in information about your farm in sections 1-2 below.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              #p("To download a report, click on ",strong("Generate PDF Report")," at the bottom", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              helpText(br()),
@@ -61,8 +62,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                choices = c("Subtidal", "Intertidal"),
                                outline = TRUE,
                                plain = TRUE,
+                               shape = "square",
                                status = "primary",
-                               icon = icon("check")
+                               icon = icon("check"),
+                               width = "100%"
                              ),
                              # textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=1, placeholder = NULL),
                              numericInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", min=0, max=100),
@@ -74,14 +77,23 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                choices = list("Off-bottom cages" = 1, "Floating cages" = 2, "On-Bottom/No gear" = 3),
                                outline = TRUE,
                                plain = TRUE,
+                               shape = "square",
                                status = "primary",
-                               icon = icon("check")
+                               icon = icon("check"),
+                               width = "100%",
+                               selected = NULL,
                              ),
-                             input_switch("switch", "Do you remove gear from the water sesaonally?"), 
+                             input_switch("switch", "Gear is removed from the water sesaonally at this site", value=F, width = "100%"), 
                              conditionalPanel(
                                condition = "input.switch == true",
-                               selectInput("gearIn", div(strong("Select month gear typically goes into the water:")), c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), width ="100%"),
-                               selectInput("gearOut", div(strong("Select month gear is typically removed from the water:")), c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), width ="100%")
+                               selectInput("gearIn", div(strong("Select month gear typically goes into the water:")), 
+                                           choices = list("Jan"=1, "Feb"=2, "Mar"=3, "Apr"=4, "May"=5, "Jun"=6, "Jul"=7, "Aug"=8, "Sep"=9, "Oct"=10, "Nov"=11, "Dec"=12), 
+                                           selected="Jan", 
+                                           width ="100%"),
+                               selectInput("gearOut", div(strong("Select month gear is typically removed from the water:")), 
+                                           choices = list("Jan"=1, "Feb"=2, "Mar"=3, "Apr"=4, "May"=5, "Jun"=6, "Jul"=7, "Aug"=8, "Sep"=9, "Oct"=10, "Nov"=11, "Dec"=12),
+                                           selected="Dec", 
+                                           width ="100%")
                              ),
                              # dateRangeInput("daterange", startview = "decade", div(strong("Date range:"), "Select months gear is in the water")),
                              helpText(br()),
@@ -105,6 +117,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ## Location table
                              tableOutput('loctable'),
                              helpText(h4("Habitat Information")),
+                             helpText(h5("Tidal range at selected site:")),
+                             tableOutput('tideTable'),
                              helpText(h5("Average sediment size class at selected site:")),
                              tableOutput('SEDTable'),
                              helpText(h5("Essential Fish Habitat (EFH) at selected site:")),
@@ -176,6 +190,9 @@ server <- function(input, output, session) {
   
   ### Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
   load("NRHA.val.rdata")
+  
+  ### read in tidal range tif file, cropped to NES extent (depths are in meters)
+  tidalRangeM=raster('cropGlobalTidalRange3.tif')
   
   ### read in aquaculture shapefile for northeast USA
   aquaculture=sf::st_read("Aquaculture.shp")
@@ -309,6 +326,20 @@ server <- function(input, output, session) {
     rownames = F,
     colnames = TRUE,
     )
+    
+    output$tideTable=renderTable({
+      trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      trangeft=trangem*3.28084
+      tides=data.frame(trangeft)
+      colnames(tides)="Tidal Range (ft)"
+      tides
+      # check=sf::st_point(c(Lonx, Latx))
+      # intrange <- sf::st_intersects(check, tidalRangeM)
+    },
+    rownames = F,
+    colnames = TRUE,
+    )
+    
   })
   
   ### Drop a marker to use for coordinates instead of Click if GIS aquaculture layer does not include farm
@@ -381,7 +412,18 @@ server <- function(input, output, session) {
     rownames = F,
     colnames = TRUE,
     )
-
+    output$tideTable=renderTable({
+      trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      trangeft=trangem*3.28084
+      tides=data.frame(trangeft)
+      colnames(tides)="Tidal Range (ft)"
+      tides
+      # check=sf::st_point(c(Lonx, Latx))
+      # intrange <- sf::st_intersects(check, tidalRangeM)
+    },
+    rownames = F,
+    colnames = TRUE,
+    )
   })
 }
 
