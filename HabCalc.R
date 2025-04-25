@@ -8,6 +8,10 @@ library(sf); sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
 library(shinyWidgets)
+library(terra)
+library(ncdf4)
+library(lubridate)
+library(dplyr)
 
 # ui <- page_fluid(
 #   navset_pill( 
@@ -57,7 +61,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ## Tides and Depth
                              # selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
                              prettyRadioButtons( 
-                               inputId = "tides",
+                               inputId = "tidalx",
                                label = div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"),
                                choices = c("Subtidal", "Intertidal"),
                                outline = TRUE,
@@ -125,6 +129,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tableOutput('EFHTable'),
                              helpText(h5("Survey-based habitat quality for black sea bass and scup at selected site:")),
                              tableOutput('habTable'),
+                             helpText(h5("Average surface water temperature (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
+                             plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
                     ),
@@ -187,6 +193,16 @@ server <- function(input, output, session) {
     renderTable({
       Rarea()
     })
+  ### Read in OISST netcdf file for surface temperature calculations
+  netCDF_file <- "sst.mon.mean.nc.nc4"
+  nc1 <- nc_open(netCDF_file)
+  ssttime <- ncvar_get(nc1, "time")
+  nc_close(nc1)
+  Ttime <- as.Date(ssttime, origin="1800-01-01")
+  # YM=format(Ttime, "%Y-%m")
+  r <- brick(netCDF_file, varname = "sst")
+  r2=terra::rotate(r, left=T) 
+  
   
   ### Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
   load("NRHA.val.rdata")
@@ -275,6 +291,63 @@ server <- function(input, output, session) {
       na = "NA",
       quoted = FALSE
     )
+    
+    ### extract OISST temperature data at site
+    Tplot <- reactive({
+    vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+    valx=data.frame(vals[,1:length(vals)])
+    valx$time=Ttime
+    colnames(valx)=c('sst', 'time')
+    valx$month=as.numeric(format(Ttime, "%m"))
+    valx$year=as.numeric(format(Ttime, "%Y"))
+    monT=valx %>% 
+      dplyr::filter(year!=2025) %>%
+      group_by(month) %>%
+      summarize(minT=min(sst),
+                maxT=max(sst),
+                meanT=mean(sst))
+    yearT=valx %>% 
+      dplyr::filter(year!=2025) %>%
+      group_by(year) %>%
+      summarize(minT=min(sst),
+                maxT=max(sst),
+                meanT=mean(sst))
+    
+    # plot(monT$minT~monT$month, type='l', ylim=c(0,30), lty=1, lwd=1, col='blue', ylab='Monthly Surface Temperature (°C)', xlab='Month', las=1, bty='l')
+    # lines(monT$maxT, lty=1, lwd=1, col='red')
+    # lines(monT$meanT, lty=1, col='gray30', lwd=2)
+    # legend('topleft', horiz=T, lty=c(1,1,1), lwd=c(1,2,1), legend=c('Max', 'Avg', 'Min'), col=c('red', 'gray30', 'blue'), bty='n')
+    # abline(h=9, lty=3)#scup 9-27 (16-22 preferred) EFH NMFS-NE-149 1999 Table 1 p.14
+    # abline(h=27, lty=3)
+    # abline(h=10, lty=2)#BSB 10-22 (17-21 preferred) EFH NMFS-NE-200 2007, pp.8-9
+    # abline(h=22, lty=2)
+    # legend('bottomright', horiz=T, lty=c(3,2), lwd=c(1,1), legend=c('Scup', 'Black sea bass'), bty='n')
+    P=ggplot(monT, aes(x=month, y=meanT))+
+      geom_line(stat = "identity", linetype=1, linewidth=2)+
+      # theme_minimal()+
+      theme_bw() +
+      theme(panel.border = element_blank(), 
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.line = element_line(colour = "black"))+
+      ylim(-5,30)+
+      ylab('Monthly Surface Temperature (°C)')+
+      xlab("Month")+
+      scale_x_continuous(breaks=c(2,4,6,8,10,12)) +
+      theme(axis.title.x = element_text(size = 16),
+            axis.text.x = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            axis.title.y = element_text(size = 16))
+    P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
+    P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#F8766D')
+    P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#619CFF')
+    P
+    })
+    
+    output$SSTplot <- 
+      renderPlot({
+        Tplot()
+      })
     
     ### Survey presence at selected coordinates
     output$habTable = renderTable({
