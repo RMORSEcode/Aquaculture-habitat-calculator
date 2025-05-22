@@ -1,4 +1,6 @@
 # https://test-connect.fisheries.noaa.gov/connect/#/apps/364
+# https://test-connect.fisheries.noaa.gov/Habitat/
+
 
 library(shiny)
 library(bslib)
@@ -8,10 +10,12 @@ library(sf); sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
 library(shinyWidgets)
-library(terra)
+# library(terra)
+library(raster)
 library(ncdf4)
 library(lubridate)
 library(dplyr)
+library(ggplot2)
 
 # ui <- page_fluid(
 #   navset_pill( 
@@ -72,7 +76,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                width = "100%"
                              ),
                              # textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=1, placeholder = NULL),
-                             numericInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", min=0, max=100),
+                             numericInput("depth", div(strong("Average depth in feet at farm site during low tide (ft):"),"Please enter the average water depth in feet during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", min=0, max=100),
 
                              ## Gear - Culture Method, removal, and dimensions
                              prettyCheckboxGroup(
@@ -129,10 +133,14 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tableOutput('EFHTable'),
                              helpText(h5("Survey-based habitat quality for black sea bass and scup at selected site:")),
                              tableOutput('habTable'),
-                             helpText(h5("Average surface water temperature (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
+                             helpText(h5("Average surface water temperature by month (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
                              plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
+                             # downloadButton(
+                             #   outputId = "downloader",
+                             #   label = "Generate PDF Report"
+                             # ),
                     ),
                     
                     tabPanel("About", 
@@ -200,7 +208,7 @@ server <- function(input, output, session) {
   nc_close(nc1)
   Ttime <- as.Date(ssttime, origin="1800-01-01")
   # YM=format(Ttime, "%Y-%m")
-  r <- brick(netCDF_file, varname = "sst")
+  r <- raster::brick(netCDF_file, varname = "sst")
   r2=terra::rotate(r, left=T) 
   
   
@@ -331,7 +339,7 @@ server <- function(input, output, session) {
             panel.grid.minor = element_blank(),
             axis.line = element_line(colour = "black"))+
       ylim(-5,30)+
-      ylab('Monthly Surface Temperature (°C)')+
+      ylab('Water Temperature (°C)')+
       xlab("Month")+
       scale_x_continuous(breaks=c(2,4,6,8,10,12)) +
       theme(axis.title.x = element_text(size = 16),
@@ -498,6 +506,35 @@ server <- function(input, output, session) {
     colnames = TRUE,
     )
   })
+  
+  output$downloader <- 
+    downloadHandler(
+      paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),
+      content = 
+        function(file)
+        {
+          rmarkdown::render(
+            input = "habitatReport.Rmd",
+            output_file = "built_report.pdf",
+            params = list(table1 = SEDtable(),
+                          plot = SSTplot(),
+                          Location=input$projloc, 
+                          # Units=input$units, 
+                          # gear=input$gear, 
+                          # ploidy=input$ploidy, 
+                          # hsize=input$hsize,
+                          Farm=input$farmname,
+                          # Number=input$Num,
+                          # Dates1=input$Htime,
+                          Lat=Latx,
+                          Lon=Lonx)
+          ) 
+          readBin(con = "built_report.pdf", 
+                  what = "raw",
+                  n = file.info("built_report.pdf")[, "size"]) %>%
+            writeBin(con = file)
+        }
+    )
 }
 
 shinyApp(ui = ui, server = server)
