@@ -1,7 +1,6 @@
 # https://test-connect.fisheries.noaa.gov/connect/#/apps/364
 # https://test-connect.fisheries.noaa.gov/Habitat/
 
-
 library(shiny)
 library(bslib)
 library(leaflet)
@@ -10,8 +9,8 @@ library(sf); sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
 library(shinyWidgets)
-# library(terra)
 library(raster)
+library(terra)
 library(ncdf4)
 library(lubridate)
 library(dplyr)
@@ -191,17 +190,18 @@ server <- function(input, output, session) {
     releases[[1]][["name"]]
   })
   
-  ### Calculate area and volume of gear, modify by EFH overlap and survey presence
-  Rarea<-reactive({
-    AreaN=data.frame(input$cageN * input$cageL * input$cageW)
-    colnames(AreaN)='Square feet added'
-    AreaN$`Cubic feet added`=AreaN*input$cageH
-    AreaN
-  })
-  output$AreaTable <- 
-    renderTable({
-      Rarea()
-    })
+  # ### Calculate area and volume of gear, modify by EFH overlap and survey presence
+  # ## this can be modified with ifelse to check on EFH and survey presence at site
+  # Rarea<-reactive({
+  #   AreaN=data.frame(input$cageN * input$cageL * input$cageW)
+  #   colnames(AreaN)='Square feet added'
+  #   AreaN$`Cubic feet added`=AreaN*input$cageH
+  #   AreaN
+  # })
+  # output$AreaTable <- 
+  #   renderTable({
+  #     Rarea()
+  #   })
   ### Read in OISST netcdf file for surface temperature calculations
   netCDF_file <- "sst.mon.mean.nc.nc4"
   nc1 <- nc_open(netCDF_file)
@@ -211,7 +211,8 @@ server <- function(input, output, session) {
   # YM=format(Ttime, "%Y-%m")
   r <- raster::brick(netCDF_file, varname = "sst")
   r2=terra::rotate(r, left=T) 
-  
+  sstr <- raster(netCDF_file,varname = "sst", layer=1)
+  xr <- raster::rotate(sstr, left=T)
   
   ### Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
   load("NRHA.val.rdata")
@@ -270,7 +271,7 @@ server <- function(input, output, session) {
         circleMarkerOptions = F,
         editOptions = editToolbarOptions(edit = FALSE, selectedPathOptions = selectedPathOptions()))
   })
-  
+  #### ____________________________________________________ Click on shape to set Latx Lonx
   RV<-reactiveValues(Clicks=list())
   
   observeEvent(input$mymap_shape_click,{
@@ -302,8 +303,41 @@ server <- function(input, output, session) {
     )
     
     ### extract OISST temperature data at site
+    nearestLand <- function (points, raster, max_distance) {
+      nearest <- function (lis, raster) {
+        neighbours <- matrix(lis[[1]], ncol = 2)
+        point <- lis[[2]]
+        land <- !is.na(neighbours[, 2])
+        if (!any(land)) {
+          return (c(NA, NA))
+        } else{
+          coords <- xyFromCell(raster, neighbours[land, 1])   
+          if (nrow(coords) == 1) {
+            return (coords[1, ])
+          }
+          dists <- sqrt((coords[, 1] - point[1]) ^ 2 +
+                          (coords[, 2] - point[2]) ^ 2)
+          return (coords[which.min(dists), ])
+        }
+      }
+      neighbour_list <- extract(raster, points,
+                                buffer = max_distance,
+                                cellnumbers = TRUE)
+      neighbour_list <- lapply(1:nrow(points),
+                               function(i) {
+                                 list(neighbours = neighbour_list[[i]],
+                                      point = as.numeric(points[i, ]))
+                               })
+      return (t(sapply(neighbour_list, nearest, raster)))
+    }
     Tplot <- reactive({
+    # vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+    ## add check for NA and get nearest coords if yes
     vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+    if(is.na(vals[1])){
+      vals <- extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+    }
+    
     valx=data.frame(vals[,1:length(vals)])
     valx$time=Ttime
     colnames(valx)=c('sst', 'time')
@@ -348,8 +382,10 @@ server <- function(input, output, session) {
             axis.text.y = element_text(size = 14),
             axis.title.y = element_text(size = 16))
     P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
-    P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#F8766D')
-    P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#619CFF')
+    # P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#F8766D')
+    # P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#619CFF')
+    P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#DF536B')
+    P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#2297E6')
     P
     })
     
@@ -422,8 +458,24 @@ server <- function(input, output, session) {
     colnames = TRUE,
     )
     
+    ### Calculate area and volume of gear, modify by EFH overlap and survey presence
+    ## this can be modified with ifelse to check on EFH and survey presence at site
+    Rarea<-reactive({
+      c1="Black Sea Bass" %in% MIDefh$SITENAME_L[int[[1]]]
+      c2="Scup" %in% MIDefh$SITENAME_L[int[[1]]]
+      
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW)
+      colnames(AreaN)='Square feet added'
+      AreaN$`Cubic feet added`=AreaN*input$cageH
+      AreaN
+    })
+    output$AreaTable <- 
+      renderTable({
+        Rarea()
+      })
+    
   })
-  
+  #####_____________________________________________________________________________________________
   ### Drop a marker to use for coordinates instead of Click if GIS aquaculture layer does not include farm
   observeEvent(input$mymap_draw_new_feature,{
     feature <- input$mymap_draw_new_feature
@@ -446,6 +498,87 @@ server <- function(input, output, session) {
       na = "NA",
       quoted = FALSE
     )
+    
+    ### extract OISST temperature data at site
+    nearestLand <- function (points, raster, max_distance) {
+      nearest <- function (lis, raster) {
+        neighbours <- matrix(lis[[1]], ncol = 2)
+        point <- lis[[2]]
+        land <- !is.na(neighbours[, 2])
+        if (!any(land)) {
+          return (c(NA, NA))
+        } else{
+          coords <- xyFromCell(raster, neighbours[land, 1])   
+          if (nrow(coords) == 1) {
+            return (coords[1, ])
+          }
+          dists <- sqrt((coords[, 1] - point[1]) ^ 2 +
+                          (coords[, 2] - point[2]) ^ 2)
+          return (coords[which.min(dists), ])
+        }
+      }
+      neighbour_list <- extract(raster, points,
+                                buffer = max_distance,
+                                cellnumbers = TRUE)
+      neighbour_list <- lapply(1:nrow(points),
+                               function(i) {
+                                 list(neighbours = neighbour_list[[i]],
+                                      point = as.numeric(points[i, ]))
+                               })
+      return (t(sapply(neighbour_list, nearest, raster)))
+    }
+    Tplot <- reactive({
+      ## add check for NA and get nearest coords if yes
+      vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+      if(is.na(vals[1])){
+        vals <- extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+      }
+      
+      valx=data.frame(vals[,1:length(vals)])
+      valx$time=Ttime
+      colnames(valx)=c('sst', 'time')
+      valx$month=as.numeric(format(Ttime, "%m"))
+      valx$year=as.numeric(format(Ttime, "%Y"))
+      monT=valx %>% 
+        dplyr::filter(year!=2025) %>%
+        group_by(month) %>%
+        summarize(minT=min(sst),
+                  maxT=max(sst),
+                  meanT=mean(sst))
+      yearT=valx %>% 
+        dplyr::filter(year!=2025) %>%
+        group_by(year) %>%
+        summarize(minT=min(sst),
+                  maxT=max(sst),
+                  meanT=mean(sst))
+      
+      P=ggplot(monT, aes(x=month, y=meanT))+
+        geom_line(stat = "identity", linetype=1, linewidth=2)+
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(colour = "black"))+
+        ylim(-5,30)+
+        ylab('Water Temperature (°C)')+
+        xlab("Month")+
+        scale_x_continuous(breaks=c(2,4,6,8,10,12)) +
+        theme(axis.title.x = element_text(size = 16),
+              axis.text.x = element_text(size = 14),
+              axis.text.y = element_text(size = 14),
+              axis.title.y = element_text(size = 16))
+      P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
+      P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#DF536B')
+      P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#2297E6')
+      P
+    })
+    
+    output$SSTplot <- 
+      renderPlot({
+        Tplot()
+      })
+    
+    
     ### marker based coordinates for survey presence (supersedes click)
     output$habTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
@@ -507,7 +640,7 @@ server <- function(input, output, session) {
     colnames = TRUE,
     )
   })
-  
+  ####_________________________________________ end of map input section
   output$downloader <- 
     downloadHandler(
       paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),
@@ -517,7 +650,12 @@ server <- function(input, output, session) {
           rmarkdown::render(
             input = "habitatReport.Rmd",
             output_file = "built_report.pdf",
-            params = list(table1 = SEDtable(),
+            params = list(table1 = EFHtable(),
+                          table2 = SEDtable(),
+                          table3 = habTable(),
+                          table4 = tideTable(),
+                          table5 = loctable(),
+                          table6 = AreaTable(),
                           plot = SSTplot(),
                           Location=input$projloc, 
                           # Units=input$units, 

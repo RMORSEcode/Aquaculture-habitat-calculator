@@ -139,7 +139,7 @@ map("worldHires", xlim=c(-78,-68),ylim=c(36.5,45), fill=T,border=0,col="gray70")
 map.axes(las=1)
 BSBefh %>%
   dplyr::filter(LIFESTAGE=="Larvae") %>%
-  ggplot2(., geometry, col='green', add=T) #BSB Juv
+  ggplot(., geometry, col='green', add=T) #BSB Juv
 
 plot(MIDefh$geometry[40], col='blue', add=T) #BSB adult
 plot(MIDefh$geometry[3], col='red', add=T) # BSB eggs
@@ -197,7 +197,12 @@ Conmap$SEDIMENT[intc[[1]]]
 
 
 ## Northeast Regional Marine Fish Habitat Assessment
-## https://www.mafmc.org/nrha
+## https://www.mafmc.org/nrha (below from Tori Kentner):
+# Count Column:
+#   The "mean" column represents a mean catch/abundance across all surveys in each hexbin from 2000-2019, split into spring and fall seasons.
+#   A value of -999 in the mean column indicates absent species unless recorded as true zeros by the survey.
+#   NAs in the SOURCES column represents hexbins where no surveys were conducted.
+# Other details: I included the number of tows recorded by each survey and a grand tow total per hexbin, as well as a list of surveys in each hexbin (SOURCES)
 
 # NRHAbsb=sf::st_read(paste0(wd,"Habitat/NHRA/abun_7_11_24/Black sea bass_abunSEASON.shp")) # spring and fall only
 NRHAbsb=sf::st_read(paste0(wd,"Habitat/NRHA/abun_7_31_24/Black sea bass_abunSEASON.shp")) # all seasons
