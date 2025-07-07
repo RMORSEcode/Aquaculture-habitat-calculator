@@ -16,22 +16,6 @@ library(lubridate)
 library(dplyr)
 library(ggplot2)
 
-# ui <- page_fluid(
-#   navset_pill( 
-#     nav_panel("A", "Page A content"), 
-#     nav_panel("B", "Page B content"), 
-#     nav_panel("C", "Page C content"), 
-#     nav_menu( 
-#       "Other links", 
-#       nav_panel("D", "Panel D content"), 
-#       "----", 
-#       "Description:", 
-#       nav_item( 
-#         a("Milford GoPro Habitat Project", href = "https://www.fisheries.noaa.gov/new-england-mid-atlantic/aquaculture/milford-labs-gopro-aquaculture-project", target = "_blank") 
-#       ), 
-#     ), 
-#   ), 
-#   id = "tab" ,
 ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                 theme = bslib::bs_theme(bootswatch = "cerulean"),
                 helpText(strong("Habitat Calculator Version:", style = "font-size:18px;")),
