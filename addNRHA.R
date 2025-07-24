@@ -55,7 +55,13 @@ ggplot() +
   geom_sf(data = cmap, aes(fill=factor(SEDNUM))) +
   coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
   theme_bw() +
-  ggtitle("CONMAP")
+  ggtitle("CONMAP Sediments")+
+  scale_fill_discrete(labels = c("Bedrock","Gravel","Gravel-sand","Sand","Clay-silt/sand","Sand-clay/silt","Clay","Sand-silt/clay","Sand/silt/clay"))+
+  labs(fill=c("Sediment Class"))+
+  xlab("Longitude")+
+  ylab("Latitude")
+       
+unique(Conmap$SEDNAME)[order(unique(Conmap$SEDNUM))]
 # with(Conmap, table(SEDIMENT, SEDNUM))
             # SEDNUM
 #SEDIMENT     1   2   3   4   5   6   7   8   9
@@ -207,6 +213,40 @@ Conmap$SEDIMENT[intc[[1]]]
 # NRHAbsb=sf::st_read(paste0(wd,"Habitat/NHRA/abun_7_11_24/Black sea bass_abunSEASON.shp")) # spring and fall only
 NRHAbsb=sf::st_read(paste0(wd,"Habitat/NRHA/abun_7_31_24/Black sea bass_abunSEASON.shp")) # all seasons
 NRHAscup=sf::st_read(paste0(wd,"Habitat/NRHA/abun_7_31_24/Scup_abunSEASON.shp")) # all seasons
+
+## checking on dimensions
+plot(NRHAbsb$geometry[[1]][[1]], type='l',axes=T)
+points(NRHAbsb$geometry[[1]][[1]][1,1], NRHAbsb$geometry[[1]][[1]][1,2], pch=19, col='red')
+points(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][2,2], pch=19, col='green')
+points(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][3,2], pch=19, col='blue')
+points(NRHAbsb$geometry[[1]][[1]][4,1], NRHAbsb$geometry[[1]][[1]][4,2], pch=19, col='pink')
+points(NRHAbsb$geometry[[1]][[1]][5,1], NRHAbsb$geometry[[1]][[1]][5,2], pch=19, col='purple')
+points(NRHAbsb$geometry[[1]][[1]][6,1], NRHAbsb$geometry[[1]][[1]][6,2], pch=19, col='orange')
+## checking on distances between points
+a=c(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][3,2])
+b=c(NRHAbsb$geometry[[1]][[1]][5,1], NRHAbsb$geometry[[1]][[1]][5,2])
+lines(x=c(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][5,1]), y=c(NRHAbsb$geometry[[1]][[1]][3,2], NRHAbsb$geometry[[1]][[1]][5,2]), col='red')
+pointDistance(a,b, lonlat = T)
+a=c(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][2,2])
+b=c(NRHAbsb$geometry[[1]][[1]][6,1], NRHAbsb$geometry[[1]][[1]][6,2])
+lines(x=c(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][6,1]), y=c(NRHAbsb$geometry[[1]][[1]][2,2], NRHAbsb$geometry[[1]][[1]][6,2]), col='black')
+pointDistance(a,b, lonlat = T)
+### inconsistent over x and y dimensions
+#top to bottom
+a=c(NRHAbsb$geometry[[10]][[1]][1,1], NRHAbsb$geometry[[10]][[1]][1,2])
+b=c(NRHAbsb$geometry[[10]][[1]][4,1], NRHAbsb$geometry[[10]][[1]][4,2])
+pointDistance(a,b, lonlat = T)
+a=c(NRHAbsb$geometry[[100]][[1]][1,1], NRHAbsb$geometry[[100]][[1]][1,2])
+b=c(NRHAbsb$geometry[[100]][[1]][4,1], NRHAbsb$geometry[[100]][[1]][4,2])
+pointDistance(a,b, lonlat = T)
+#side to side
+a=c(NRHAbsb$geometry[[10]][[1]][2,1], NRHAbsb$geometry[[10]][[1]][2,2])
+b=c(NRHAbsb$geometry[[10]][[1]][6,1], NRHAbsb$geometry[[10]][[1]][6,2])
+pointDistance(a,b, lonlat = T)
+a=c(NRHAbsb$geometry[[100]][[1]][2,1], NRHAbsb$geometry[[100]][[1]][2,2])
+b=c(NRHAbsb$geometry[[100]][[1]][6,1], NRHAbsb$geometry[[100]][[1]][6,2])
+pointDistance(a,b, lonlat = T)
+
 
 NRHAbsb$mean[which(NRHAbsb$mean==-999)]=NA
 NRHAbsb.sp=NRHAbsb %>% 
@@ -479,15 +519,37 @@ boxplot(NRHAbsb.wt$cpue,na.rm=T, ylim=c(0,60),col='Orange',ylab='Values',xlab='C
 
 quantile(NRHAbsb.sp$mean,na.rm=T)
 
-maps::map("worldHires", xlim=c(-77,-65),ylim=c(35,45), fill=T,border=0,col="gray70")
+maps::map("worldHires", xlim=c(-77,-65),ylim=c(35,45), fill=T,border=0,col="gray80")
 map.axes(las=1)
 map('state', fill = F, add=T)
 # plot(NRHAbsb.sp["mean"], breaks=c(0,1,2,5,10,150), add=T)
 plot(NRHAbsb.sp["mean"], breaks=c(0,1,2,5,10,15),at=c(0,1,2,5,10,15), main="BSB Spring CPUE", add=T)
 text(-72,38, pos=4, labels = "BSB Spring")
 # ColorBar(breaks=c(0,1,2,5,10,15),at=c(0,1,2,5,10,15))
+plot(NRHA.val["bsbYRhab"], breaks=c(0,1,2,3),at=c(0,1,2,3), add=T)
 
+col=c('white', 'lightblue', 'blue', 'darkblue')
+col=c('white','pink', 'salmon', 'red')
+col=c('black','white', 'pink', 'red') 
+col=c('coral', 'coral2', 'coral3', 'coral4', 'lightsalmon','tomato2', 'tomato', 'tomato3', 'sandybrown', 'goldenrod' 'lightgoldenrodyellow' )
+col=c('gray90', 'cadetblue1', 'steelblue3', 'royalblue4')
 
+maps::map("worldHires", xlim=c(-77,-65),ylim=c(35,45), fill=T,border=0,col="gray80")
+map.axes(las=1)
+plot(NRHA.val["bsbYRhab"], breaks=c(0,1,2,3),at=c(0,1,2,3), add=T, col=c('azure', 'lightskyblue', 'steelblue', 'royalblue4')[as.numeric(NRHA.val$bsbYRhab)])
+plot(NRHA.val["bsbYRhab"], breaks=c(0,1,2,3),at=c(0,1,2,3), add=T, col=c('white','lightgoldenrodyellow' , 'goldenrod', 'tomato2')[as.numeric(NRHA.val$bsbYRhab)])
+map('state', fill = F, add=T)
+
+t2=NRHAbsb$geometry
+t2$val=NRHA.yr$bsbYRhab
+t3=terra::rasterize(t2)
+plot(t2["val"], main="BSB Spring CPUE", add=T)
+
+library(stars)
+library(sf)
+mysf <- st_read("myshp.shp")
+myras <- st_rasterize(NRHAbsb, st_as_stars(st_bbox(NRHAbsb), nx = 1000, ny = 1000, values = NA_real_))
+plot(myras) 
 
 ## testing for point in polygon
 # check=sf::st_point(c(-73.3630,41.1032)) # western CT

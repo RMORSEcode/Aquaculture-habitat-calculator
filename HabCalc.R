@@ -195,8 +195,8 @@ server <- function(input, output, session) {
   # YM=format(Ttime, "%Y-%m")
   r <- raster::brick(netCDF_file, varname = "sst")
   r2=terra::rotate(r, left=T) 
-  sstr <- raster(netCDF_file,varname = "sst", layer=1)
-  xr <- raster::rotate(sstr, left=T)
+  # sstr <- raster(netCDF_file,varname = "sst", layer=1)
+  # xr <- raster::rotate(sstr, left=T)
   
   ### Read in Northeast Regional Habitat Assessment pre-processed hexgrid quantiles for black sea bass and scup
   load("NRHA.val.rdata")
@@ -393,6 +393,7 @@ server <- function(input, output, session) {
                                          NRHA.val$bsbFLhab[int[[1]]],
                                          NRHA.val$bsbWThab[int[[1]]]))
       rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
+      colnames(habt)=c("Scup", "Black sea bass")
       habt
     },
     rownames = TRUE,
@@ -578,6 +579,7 @@ server <- function(input, output, session) {
                                          NRHA.val$bsbFLhab[int[[1]]],
                                          NRHA.val$bsbWThab[int[[1]]]))
       rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
+      colnames(habt)=c("Scup", "Black sea bass")
       habt
     },
     rownames = TRUE,
