@@ -120,10 +120,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
-                             # downloadButton(
-                             #   outputId = "downloader",
-                             #   label = "Generate PDF Report"
-                             # ),
+                             downloadButton(
+                               outputId = "downloader",
+                               label = "Generate PDF Report"
+                             ),
                     ),
                     
                     tabPanel("About", 
@@ -643,14 +643,17 @@ server <- function(input, output, session) {
                           table5 = loctable(),
                           table6 = AreaTable(),
                           plot = SSTplot(),
+                          tidal=input$tidalx,
                           Location=input$projloc, 
-                          # Units=input$units, 
-                          # gear=input$gear, 
-                          # ploidy=input$ploidy, 
-                          # hsize=input$hsize,
+                          Depth=input$depth,
+                          gear=input$gearGroup,
+                          gearIn=input$gearIn,
+                          gearOut=input$gearOut,
                           Farm=input$farmname,
-                          # Number=input$Num,
-                          # Dates1=input$Htime,
+                          Number=input$cageN,
+                          Length=input$cageL,
+                          Width=input$cageW,
+                          Height=input$cageH,
                           Lat=Latx,
                           Lon=Lonx)
           ) 
