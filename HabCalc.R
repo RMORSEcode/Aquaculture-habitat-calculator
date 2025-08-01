@@ -636,13 +636,13 @@ server <- function(input, output, session) {
           rmarkdown::render(
             input = "habitatReport.Rmd",
             output_file = "built_report.pdf",
-            params = list(table1 = EFHtable(),
-                          table2 = SEDtable(),
-                          table3 = habTable(),
-                          table4 = tideTable(),
-                          table5 = loctable(),
-                          table6 = AreaTable(),
-                          plot = SSTplot(),
+            params = list(#table1 = EFHtable(),
+                          #table2 = SEDtable(),
+                          #table3 = habTable(),
+                          #table4 = tideTable(),
+                          #table5 = loctable(),
+                          #table6 = AreaTable(),
+                          plot = Tplot(),
                           tidal=input$tidalx,
                           Location=input$projloc, 
                           Depth=input$depth,
@@ -653,9 +653,9 @@ server <- function(input, output, session) {
                           Number=input$cageN,
                           Length=input$cageL,
                           Width=input$cageW,
-                          Height=input$cageH,
-                          Lat=Latx,
-                          Lon=Lonx)
+                          Height=input$cageH)
+                          #Lat=Latx,
+                          #Lon=Lonx)
           ) 
           readBin(con = "built_report.pdf", 
                   what = "raw",

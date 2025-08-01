@@ -137,7 +137,7 @@ knitr::kable(params[["table6"]],
              caption="Habitat provided")
 ```
 # **Summary**  
-Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[[Number]]` cages results in the addition of `r params[["table6"]]` square feet of additional structure habitat.
+Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[["Number"]]` cages results in the addition of `r params[["table6"]]` square feet of additional structure habitat.
 
 
   
