@@ -94,9 +94,7 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 `r params[["Number"]]`
 
 **Gear Dimensions (Length, Width, Height (ft)):**
-`r params[["Length"]]`
-`r params[["Width"]]`
-`r params[["Height"]]`
+`r params[["Length"]]` **x** `r params[["Width"]]` **x** `r params[["Height"]]`  
 
 **Farm location (latitude, longitude):**  
 `r params[["Lat"]]`, `r params[["Lon"]]`

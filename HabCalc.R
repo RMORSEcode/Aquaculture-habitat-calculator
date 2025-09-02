@@ -18,7 +18,7 @@ library(ggplot2)
 
 ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                 theme = bslib::bs_theme(bootswatch = "cerulean"),
-                helpText(strong("Habitat Calculator Version:", style = "font-size:18px;")),
+                helpText(strong("Aquaculture Habitat Calculator Version:", style = "font-size:18px;")),
                 textOutput("githubversion"),
                 helpText(br()),
                 # setBackgroundImage(src='background1.png'),
@@ -29,7 +29,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                     tabPanel("Habitat Calculator", 
                              # tags$img(src='meatball_BSB_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
                              tags$img(src='white_swoosh_fish3_500pxH_1650pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
-                             titlePanel(h1("Habitat Calculator"), windowTitle = "Aquaculture Nutrient Removal Calculator"),
+                             titlePanel(h1("Aquaculture Habitat Calculator"), windowTitle = "Aquaculture Habitat Calculator"),
                              helpText(br()),
                              
                              ### add text box with black border ### #5761C0  style = "border-style: solid; border-color: #C6E6F0#5EB6D9; background-color: #5EB6D9;",
@@ -65,7 +65,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              prettyCheckboxGroup(
                                inputId = "gearGroup",
                                label = div(strong("Culture Method:"), "Select the gear type primarily used for growing oysters (select all that apply)"),
-                               choices = list("Off-bottom cages" = 1, "Floating cages" = 2, "On-Bottom/No gear" = 3),
+                               choices = list("Off-bottom cages", "Floating cages", "On-Bottom/No gear"),
+                               # choices = list("Off-bottom cages" = 1, "Floating cages" = 2, "On-Bottom/No gear" = 3),
                                outline = TRUE,
                                plain = TRUE,
                                shape = "square",
@@ -78,11 +79,13 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              conditionalPanel(
                                condition = "input.switch == true",
                                selectInput("gearIn", div(strong("Select month gear typically goes into the water:")), 
-                                           choices = list("Jan"=1, "Feb"=2, "Mar"=3, "Apr"=4, "May"=5, "Jun"=6, "Jul"=7, "Aug"=8, "Sep"=9, "Oct"=10, "Nov"=11, "Dec"=12), 
+                                           # choices = list("Jan"=1, "Feb"=2, "Mar"=3, "Apr"=4, "May"=5, "Jun"=6, "Jul"=7, "Aug"=8, "Sep"=9, "Oct"=10, "Nov"=11, "Dec"=12), 
+                                           choices = list("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 
                                            selected="Jan", 
                                            width ="100%"),
                                selectInput("gearOut", div(strong("Select month gear is typically removed from the water:")), 
-                                           choices = list("Jan"=1, "Feb"=2, "Mar"=3, "Apr"=4, "May"=5, "Jun"=6, "Jul"=7, "Aug"=8, "Sep"=9, "Oct"=10, "Nov"=11, "Dec"=12),
+                                           # choices = list("Jan"=1, "Feb"=2, "Mar"=3, "Apr"=4, "May"=5, "Jun"=6, "Jul"=7, "Aug"=8, "Sep"=9, "Oct"=10, "Nov"=11, "Dec"=12),
+                                           choices = list("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 
                                            selected="Dec", 
                                            width ="100%")
                              ),
@@ -92,9 +95,9 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText("Please enter the average number of gear typically in the water, followed by the gear dimentions length, width, and height in feet"),
                              fluidRow(
                                column(3, numericInput("cageN", strong("Number of Cages"), 0, min=0, max=1000)),
-                               column(3, numericInput("cageL", strong("Length of Gear (ft)"), 0, min=0, max=10)),
-                               column(3, numericInput("cageW", strong("Width of Gear(ft)"), 0, min=0, max=10)),
-                               column(3, numericInput("cageH", strong("Height of Gear (ft)"), 0, min=0, max=10)),
+                               column(3, numericInput("cageL", strong("Length of Gear (ft)"), 3, min=0, max=15)),
+                               column(3, numericInput("cageW", strong("Width of Gear(ft)"), 3, min=0, max=10)),
+                               column(3, numericInput("cageH", strong("Height of Gear (ft)"), 3, min=0, max=10)),
                              ),
                              
                              ### 2 LOCATION ###
@@ -129,11 +132,11 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                     tabPanel("About", 
                              tags$img(src='meatball_BSB_scup_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and five oysters being held in palm, with additional oysters in the background."),
                              # tags$img(src='meatball_BSB_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and five oysters being held in palm, with additional oysters in the background."),
-                             titlePanel(h1("Habitat Calculator"), windowTitle = "Habitat Calculator"),
+                             titlePanel(h1("Aquaculture Habitat Calculator"), windowTitle = "Aquaculture Habitat Calculator"),
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
-                                  p("The Habitat Calculator can be used for new permit applications under consideratoin of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("The Aquaculture Habitat Calculator can be used for new permit applications under consideratoin of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Farm location"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Culture method (floating gear vs. off-bottom gear vs. on-bottom)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Tidal information (sub-tidal vs tidal)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
@@ -267,12 +270,21 @@ server <- function(input, output, session) {
     Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1]
     Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2]
     Areax=NESaquaculture$SHAPE__Are[[which(NESaquaculture$objectid==RV$Clicks)]][1]
-    
+    clickloc=reactive({
+      df=data.frame("Lon"=Lonx,
+                 "Lat"=Latx,
+                 "Area"=Areax)
+      df
+    })
+    # clickloc=data.frame("Lon"=Lonx,
+    #            "Lat"=Latx,
+    #            "Area"=Areax)
     ### Lat Long and area of lease site from GIS
     output$loctable <- renderTable(
       data.frame("Lon"=Lonx,
                  "Lat"=Latx,
                  "Area"=Areax),
+      # clickloc(),
       striped = T,
       hover = F,
       bordered = T,
@@ -315,7 +327,6 @@ server <- function(input, output, session) {
       return (t(sapply(neighbour_list, nearest, raster)))
     }
     Tplot <- reactive({
-    # vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
     ## add check for NA and get nearest coords if yes
     vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
     if(is.na(vals[1])){
@@ -339,19 +350,11 @@ server <- function(input, output, session) {
       summarize(minT=min(sst),
                 maxT=max(sst),
                 meanT=mean(sst))
-    
-    # plot(monT$minT~monT$month, type='l', ylim=c(0,30), lty=1, lwd=1, col='blue', ylab='Monthly Surface Temperature (°C)', xlab='Month', las=1, bty='l')
-    # lines(monT$maxT, lty=1, lwd=1, col='red')
-    # lines(monT$meanT, lty=1, col='gray30', lwd=2)
-    # legend('topleft', horiz=T, lty=c(1,1,1), lwd=c(1,2,1), legend=c('Max', 'Avg', 'Min'), col=c('red', 'gray30', 'blue'), bty='n')
-    # abline(h=9, lty=3)#scup 9-27 (16-22 preferred) EFH NMFS-NE-149 1999 Table 1 p.14
-    # abline(h=27, lty=3)
-    # abline(h=10, lty=2)#BSB 10-22 (17-21 preferred) EFH NMFS-NE-200 2007, pp.8-9
-    # abline(h=22, lty=2)
-    # legend('bottomright', horiz=T, lty=c(3,2), lwd=c(1,1), legend=c('Scup', 'Black sea bass'), bty='n')
+    # From EFH descriptions MAFMC - referenced 8/2025
+    #scup 9-27 (16-22 preferred) EFH NMFS-NE-149 1999 Table 1 p.14
+    #BSB 10-22 (17-21 preferred) EFH NMFS-NE-200 2007, pp.8-9
     P=ggplot(monT, aes(x=month, y=meanT))+
       geom_line(stat = "identity", linetype=1, linewidth=2)+
-      # theme_minimal()+
       theme_bw() +
       theme(panel.border = element_blank(), 
             panel.grid.major = element_blank(),
@@ -366,8 +369,6 @@ server <- function(input, output, session) {
             axis.text.y = element_text(size = 14),
             axis.title.y = element_text(size = 16))
     P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
-    # P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#F8766D')
-    # P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#619CFF')
     P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#DF536B')
     P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#2297E6')
     P
@@ -401,22 +402,41 @@ server <- function(input, output, session) {
     )
     
     ### Essential Fish Habitat at selected coordinates
-    output$EFHTable = renderTable({
-      check=sf::st_point(c(Lonx, Latx))
-      intefh <- sf::st_intersects(check, MIDefh$geometry)
-      x=MIDefh$SITENAME_L[intefh[[1]]]
-      y=MIDefh$LIFESTAGE[intefh[[1]]]
-      efh=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
-      for(i in 1:length(intefh[[1]])){
-        efh[i,1]=paste(y[i],x[i], sep=' ')
-        # print(paste(y[i],x[i], sep=' '))
-      }
-      colnames(efh)="Essential Fish Habitat"
-      efh
-    },
-    rownames = F,
-    colnames = TRUE,
+    efh=reactive({
+    check=sf::st_point(c(Lonx, Latx))
+    intefh <- sf::st_intersects(check, MIDefh$geometry)
+    x=MIDefh$SITENAME_L[intefh[[1]]]
+    y=MIDefh$LIFESTAGE[intefh[[1]]]
+    df=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+    for(i in 1:length(intefh[[1]])){
+      df[i,1]=paste(y[i],x[i], sep=' ')
+    }
+    colnames(df)="Essential Fish Habitat"
+    df
+    })
+    
+    output$EFHTable = 
+      renderTable(
+        efh(),
+        colnames=T
     )
+    
+    #  output$EFHTable = renderTable({
+    #   check=sf::st_point(c(Lonx, Latx))
+    #   intefh <- sf::st_intersects(check, MIDefh$geometry)
+    #   x=MIDefh$SITENAME_L[intefh[[1]]]
+    #   y=MIDefh$LIFESTAGE[intefh[[1]]]
+    #   efh=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+    #   for(i in 1:length(intefh[[1]])){
+    #     efh[i,1]=paste(y[i],x[i], sep=' ')
+    #     # print(paste(y[i],x[i], sep=' '))
+    #   }
+    #   colnames(efh)="Essential Fish Habitat"
+    #   efh
+    # },
+    # rownames = F,
+    # colnames = TRUE,
+    # )
     
     ### Sediment type at selected coordinates
     output$SEDTable = renderTable({
@@ -445,20 +465,30 @@ server <- function(input, output, session) {
     
     ### Calculate area and volume of gear, modify by EFH overlap and survey presence
     ## this can be modified with ifelse to check on EFH and survey presence at site
-    Rarea<-reactive({
-      c1="Black Sea Bass" %in% MIDefh$SITENAME_L[int[[1]]]
-      c2="Scup" %in% MIDefh$SITENAME_L[int[[1]]]
+    Rarea <- reactive({
+      # AreaN <- reactive()
       
-      AreaN=data.frame(input$cageN * input$cageL * input$cageW)
+      # observe({
+      #   EFHTable
+      # c1="Black Sea Bass" %in% output$EFHTable #MIDefh$SITENAME_L[int[[1]]]
+      # c2="Scup" %in% output$EFHTable  #MIDefh$SITENAME_L[int[[1]]]
+      # })
+      # print(c1)
+      # print(c2)
+      # areamod=ifelse((c1==T| c2==T), 1, 0) # if area is EFH for either species count it as habitat
+      
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW) # * areamod)
       colnames(AreaN)='Square feet added'
       AreaN$`Cubic feet added`=AreaN*input$cageH
       AreaN
     })
-    output$AreaTable <- 
-      renderTable({
-        Rarea()
-      })
     
+    output$AreaTable <- 
+      renderTable(
+        Rarea(),
+        rownames=T
+      )
+      # })
   })
   #####_____________________________________________________________________________________________
   ### Drop a marker to use for coordinates instead of Click if GIS aquaculture layer does not include farm
@@ -467,10 +497,17 @@ server <- function(input, output, session) {
     Lonx=feature$geometry$coordinates[[1]]
     Latx=feature$geometry$coordinates[[2]]
     Areax=NA
+    clickloc=reactive({
+      df=data.frame("Lon"=Lonx,
+                      "Lat"=Latx,
+                      "Area"=Areax)
+      df
+    })
     output$loctable <- renderTable(
       data.frame("Lon"=Lonx,
                  "Lat"=Latx,
                  "Area"=Areax),
+      # clickloc(),
       striped = T,
       hover = F,
       bordered = T,
@@ -586,22 +623,43 @@ server <- function(input, output, session) {
     colnames = TRUE,
     )
     ### marker based coordinates for EFH (supersedes click)
-    output$EFHTable = renderTable({
+    
+    ### Essential Fish Habitat at selected coordinates
+    efh=reactive({
       check=sf::st_point(c(Lonx, Latx))
       intefh <- sf::st_intersects(check, MIDefh$geometry)
       x=MIDefh$SITENAME_L[intefh[[1]]]
       y=MIDefh$LIFESTAGE[intefh[[1]]]
-      efh=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+      df=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
       for(i in 1:length(intefh[[1]])){
-        efh[i,1]=paste(y[i],x[i], sep=' ')
-        # print(paste(y[i],x[i], sep=' '))
+        df[i,1]=paste(y[i],x[i], sep=' ')
       }
-      colnames(efh)="Essential Fish Habitat"
-      efh
-    },
-    rownames = F,
-    colnames = TRUE,
-    )
+      colnames(df)="Essential Fish Habitat"
+      df
+    })
+    
+    output$EFHTable = 
+      renderTable(
+        efh(),
+        colnames=T
+      )
+    # output$EFHTable = renderTable({
+    #   check=sf::st_point(c(Lonx, Latx))
+    #   intefh <- sf::st_intersects(check, MIDefh$geometry)
+    #   x=MIDefh$SITENAME_L[intefh[[1]]]
+    #   y=MIDefh$LIFESTAGE[intefh[[1]]]
+    #   efh=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+    #   for(i in 1:length(intefh[[1]])){
+    #     efh[i,1]=paste(y[i],x[i], sep=' ')
+    #     # print(paste(y[i],x[i], sep=' '))
+    #   }
+    #   colnames(efh)="Essential Fish Habitat"
+    #   efh
+    # },
+    # rownames = F,
+    # colnames = TRUE,
+    # )
+    
     ### marker based coordinates for sediments (supersedes click)
     output$SEDTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
@@ -625,6 +683,30 @@ server <- function(input, output, session) {
     rownames = F,
     colnames = TRUE,
     )
+    
+    Rarea <- reactive({
+      # AreaN <- reactive()
+      
+      # observe({
+      #   EFHTable
+      # c1="Black Sea Bass" %in% output$EFHTable #MIDefh$SITENAME_L[int[[1]]]
+      # c2="Scup" %in% output$EFHTable  #MIDefh$SITENAME_L[int[[1]]]
+      # })
+      # print(c1)
+      # print(c2)
+      # areamod=ifelse((c1==T| c2==T), 1, 0) # if area is EFH for either species count it as habitat
+      
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW) # * areamod)
+      colnames(AreaN)='Square feet added'
+      AreaN$`Cubic feet added`=AreaN*input$cageH
+      AreaN
+    })
+    
+    output$AreaTable <- 
+      renderTable(
+        Rarea(),
+        rownames=T
+      )
   })
   ####_________________________________________ end of map input section
   output$downloader <- 
@@ -636,26 +718,30 @@ server <- function(input, output, session) {
           rmarkdown::render(
             input = "habitatReport.Rmd",
             output_file = "built_report.pdf",
-            params = list(#table1 = EFHtable(),
-                          #table2 = SEDtable(),
-                          #table3 = habTable(),
-                          #table4 = tideTable(),
-                          #table5 = loctable(),
-                          #table6 = AreaTable(),
-                          plot = Tplot(),
-                          tidal=input$tidalx,
-                          Location=input$projloc, 
-                          Depth=input$depth,
-                          gear=input$gearGroup,
-                          gearIn=input$gearIn,
-                          gearOut=input$gearOut,
-                          Farm=input$farmname,
-                          Number=input$cageN,
-                          Length=input$cageL,
-                          Width=input$cageW,
-                          Height=input$cageH)
-                          #Lat=Latx,
-                          #Lon=Lonx)
+            params = list(
+              #table1 = efh(),
+              #table2 = SEDtable(),
+              #table3 = habTable(),
+              #table4 = tideTable(),
+              #table5 = loctable(),
+              # table5 =clickloc(),
+              # table6 = Rarea(),
+              plot = Tplot(),
+              tidal=input$tidalx,
+              Location=input$projloc, 
+              Depth=input$depth,
+              gear=input$gearGroup,
+              gearIn=input$gearIn,
+              gearOut=input$gearOut,
+              Farm=input$farmname,
+              Number=input$cageN,
+              Length=input$cageL,
+              Width=input$cageW,
+              Height=input$cageH,
+              Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1],
+              Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2])#,
+            # Lat=Latx,
+            # Lon=Lonx)
           ) 
           readBin(con = "built_report.pdf", 
                   what = "raw",
