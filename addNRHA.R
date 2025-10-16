@@ -129,6 +129,12 @@ NEWefh=sf::st_transform(NEWENGefh, "WGS84")
 BSBefh=MIDefh %>% dplyr::filter(SITENAME_L=="Black Sea Bass")
 SCUPefh=MIDefh %>% dplyr::filter(SITENAME_L=="Scup")
 
+map("worldHires", xlim=c(-78,-68),ylim=c(36.5,45), fill=T,border=0,col="gray70")
+map.axes(las=1)
+MIDefh %>%
+  dplyr::filter(LIFESTAGE=="Adult", SITENAME_L=="Scup") %>%
+  ggplot(., geometry, col='green', add=T)
+
 BSBefh %>%
   dplyr::filter(LIFESTAGE=="Larvae") %>%
   leaflet() %>%

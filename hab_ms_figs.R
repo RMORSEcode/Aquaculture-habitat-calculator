@@ -9,38 +9,27 @@ library(mapdata)
 library(terra)
 library(sf); sf_use_s2(FALSE)
 
-wd1='C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/Habitat/Manuscript'
-
+wd1='C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/Habitat/Manuscript/'
 #_________________________________________________________________
 ### Figure 1 ### Map of region and samples
 data(stateMapEnv)
-wd="C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/"
-stations=readxl::read_xlsx(paste(wd, "Location_data.xlsx", sep=''),sheet='final2')
-par(mar = c(0,0,0,0))
-par(oma = c(0,0,0,0))
+wd='C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/Habitat/'
+stations=readxl::read_xlsx(paste(wd, "FarmLocation.xlsx", sep=''),sheet='Farms')
+## plot map
+tiff(paste0(wd1,"Fig1map_Morse_et_al_12_17.tiff"), height = 12, width = 17, units = 'cm', 
+     compression = "lzw", res = 300)
+par(mar = c(2,2,0,0)) #(b,l,t,r)
+par(oma = c(2,2,0,0))
 map("worldHires", xlim=c(-79,-68),ylim=c(33,45), fill=T,border=0,col="gray70", xlab="Lon")
 map('lakes', add=TRUE, fill=TRUE, col='white', boundary='black')
 map.axes(las=1)
 mtext(c("Longitude", "Latitude"), side=c(1,2), line = 2.5)
 map('state', fill = F, add=T) # add state lines
-# plot stations with N in different color
-stations2=stations %>% filter(Waterbody_Name %in% RegionFarm$Waterbody_Name[complete.cases(RegionFarm$Tissue_N_Percent)])
-stations3=stations %>% filter(!(Waterbody_Name %in% RegionFarm$Waterbody_Name[complete.cases(RegionFarm$Tissue_N_Percent)]))
-## plot
-tiff("Fig1_Rose_et_al_12_17.tiff", height = 12, width = 17, units = 'cm', 
-     compression = "lzw", res = 300)
-par(mar = c(2,2,0,0)) #(b,l,t,r)
-par(oma = c(2,2,0,0))
-par(family = "Arial")
-map("worldHires", xlim=c(-79,-68),ylim=c(33,45), fill=T,border=0,col="gray90")
-map('lakes', add=TRUE, fill=TRUE, col='white', boundary='black')
-map.axes(las=1)
-map('state', fill = F, add=T) # add state lines
-mtext(c("Longitude", "Latitude"), side=c(1,2), line = 2.5)
-points(stations3$Longitude, stations3$Latitude, pch=23, col='black', bg='orange', cex=1.15)
-points(stations2$Longitude, stations2$Latitude, pch=21, col='black', bg='green', cex=1.15)
-legend(-76,36, pch=c(23,21), col='black', pt.bg=c('orange', 'green'),legend=c('Morphometric data', 'Morphometric + N'), bty='n', )
+points(stations$Longitude, stations$Latitude, pch=23, col='black', bg=ifelse(stations$GoPro=='yes','red','yellow'), cex=1.15)
+legend(-76,36, pch=c(23,23), col='black', pt.bg=c('red', 'yellow'),legend=c('GoPro video', 'Observation'), bty='n', )
 dev.off()
+
+
 
 
 
@@ -251,7 +240,7 @@ map.axes(las=1)
 map('state', fill = F, add=T)
 plot(tidalRangeM, add=T)
 #convert the raster to points for plotting
-map.p <- rasterToPoints(tidalRangeM)
+map.p <- raster::rasterToPoints(tidalRangeM)
 #Make the points a dataframe for ggplot
 df <- data.frame(map.p)
 #Make appropriate column headings
@@ -266,13 +255,13 @@ p1=ggplot() +
   geom_tile(data=df, aes(x=Longitude, y=Latitude, fill=MAP)) +
   coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
   theme_bw() +
-  ggtitle("Tidal Range")+
+  # ggtitle("Tidal Range")+
   labs(fill=c("Tidal Range (m)"))+
   xlab("Longitude")+
   ylab("Latitude")+
   scale_fill_gradientn(colours = terrain.colors(7), limits=c(0,5))
   # scale_fill_gradient(low = "gray70", high = "black", limits=c(0,6), na.value = NA)
-tiff(paste0(wd1,"//Figx4_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
+tiff(paste0(wd1,"Figx4_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
      compression = "lzw", res = 300)
 p1
 dev.off()
@@ -286,12 +275,12 @@ p2=ggplot() +
   geom_sf(data = cmap, aes(fill=factor(SEDNUM))) +
   coord_sf(1.3, xlim = c(-78,-68), ylim = c(36.5,45)) +
   theme_bw() +
-  ggtitle("CONMAP Sediments")+
+  # ggtitle("CONMAP Sediments")+
   scale_fill_discrete(labels = c("Bedrock","Gravel","Gravel-sand","Sand","Clay-silt/sand","Sand-clay/silt","Clay","Sand-silt/clay","Sand/silt/clay"))+
   labs(fill=c("Sediment Class"))+
   xlab("Longitude")+
   ylab("Latitude")
-tiff(paste0(wd1,"//Figx5_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
+tiff(paste0(wd1,"Figx5_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
      compression = "lzw", res = 300)
 p2
 dev.off()

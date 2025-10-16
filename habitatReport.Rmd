@@ -5,26 +5,22 @@ title: |
 output: pdf_document
 date: "`r format(Sys.Date(),'%B %e, %Y')`"
 params: 
-  table6: 'NULL'
-  table5: 'NULL'
-  table4: 'NULL'
-  table3: 'NULL'
-  table2: 'NULL'
-  table1: 'NULL'
+  tableEFH: 'NULL'
+  tableArea: 'NULL'
   plot: 'NULL'
-  Farm: NA
-  Location: NA
-  Lat: NA
-  Lon: NA
   tidal: NA
+  Location: NA
   Depth: NA
   gear: NA
   gearIn: NA
   gearOut: NA
+  Farm: NA
   Number: NA
   Length: NA
   Width: NA
   Height: NA
+  Lonx: NA
+  Latx: NA
 ---
 
 ```{r, echo = F, warning=FALSE, echo=FALSE}
@@ -101,7 +97,7 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 
 # **Essential Fish Habitat at selected site**  
 ```{r, tidy='styler', echo=FALSE}
-knitr::kable(params[["table1"]], 
+knitr::kable(params[["tableEFH"]], 
              caption="Essential Fish Habitat")
 ```
 
@@ -124,18 +120,18 @@ knitr::kable(params[["table4"]],
 ```
 
 # **Annual surface water temperature range at selected site**  
-Average surface water temperature by month (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:
+Average surface water temperature by month (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:  
 ```{r, fig.dim = c(4, 4), echo=FALSE}
 params[["plot"]]
 ```
 
 # **Additional structured habitat provided by aquaculture gear**  
 ```{r, tidy='styler', echo=FALSE}
-knitr::kable(params[["table6"]], 
+knitr::kable(params[["tableArea"]], 
              caption="Habitat provided")
 ```
 # **Summary**  
-Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[["Number"]]` cages results in the addition of `r params[["table6"]]` square feet of additional structure habitat.
+Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[["Number"]]` cages results in the addition of `r params[["tableArea"]][1,1]` square feet of additional structured habitat for black sea bass and `r params[["tableArea"]][1,2]`.
 
 
   

@@ -5,7 +5,7 @@ library(shiny)
 library(bslib)
 library(leaflet)
 library(leaflet.extras)
-library(sf); sf_use_s2(FALSE)
+library(sf)#; sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
 library(shinyWidgets)
@@ -44,7 +44,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(h3("1) Farm Information")),
                              textAreaInput("farmname", div(strong("Farm Name:"), " Please enter the name of the oyster farm"),value = "", width="100%", rows=1, placeholder = NULL),
                              textAreaInput("projloc", div(strong("Location:"),"Please enter the name of the water body where the farm is located"), value = "", width ="100%", rows=1, placeholder = NULL),
-
+                             
                              ## Tides and Depth
                              # selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
                              prettyRadioButtons( 
@@ -60,7 +60,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ),
                              # textAreaInput("depth", div(strong("Average depth at farm site during low tide (MLLW):"),"Please enter the average water depth during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", rows=1, placeholder = NULL),
                              numericInput("depth", div(strong("Average depth in feet at farm site during low tide (ft):"),"Please enter the average water depth in feet during mean lower low water (MLLW) at the farm site"), value = "", width ="100%", min=0, max=100),
-
+                             
                              ## Gear - Culture Method, removal, and dimensions
                              prettyCheckboxGroup(
                                inputId = "gearGroup",
@@ -117,6 +117,14 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              tableOutput('SEDTable'),
                              helpText(h5("Essential Fish Habitat (EFH) at selected site:")),
                              tableOutput('EFHTable'),
+                             
+                             # verbatimTextOutput('efhc1', placeholder = T),
+                             # verbatimTextOutput('efhc2', placeholder = T),
+                             # verbatimTextOutput('areamod2', placeholder = T),
+                             # verbatimTextOutput('surveyscup', placeholder = T),
+                             # verbatimTextOutput('surveybsb', placeholder = T),
+                             # verbatimTextOutput('efhareamod', placeholder = T),
+                             
                              helpText(h5("Survey-based habitat quality for black sea bass and scup at selected site:")),
                              tableOutput('habTable'),
                              helpText(h5("Average surface water temperature by month (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
@@ -272,8 +280,8 @@ server <- function(input, output, session) {
     Areax=NESaquaculture$SHAPE__Are[[which(NESaquaculture$objectid==RV$Clicks)]][1]
     clickloc=reactive({
       df=data.frame("Lon"=Lonx,
-                 "Lat"=Latx,
-                 "Area"=Areax)
+                    "Lat"=Latx,
+                    "Area"=Areax)
       df
     })
     # clickloc=data.frame("Lon"=Lonx,
@@ -327,51 +335,51 @@ server <- function(input, output, session) {
       return (t(sapply(neighbour_list, nearest, raster)))
     }
     Tplot <- reactive({
-    ## add check for NA and get nearest coords if yes
-    vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
-    if(is.na(vals[1])){
-      vals <- extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
-    }
-    
-    valx=data.frame(vals[,1:length(vals)])
-    valx$time=Ttime
-    colnames(valx)=c('sst', 'time')
-    valx$month=as.numeric(format(Ttime, "%m"))
-    valx$year=as.numeric(format(Ttime, "%Y"))
-    monT=valx %>% 
-      dplyr::filter(year!=2025) %>%
-      group_by(month) %>%
-      summarize(minT=min(sst),
-                maxT=max(sst),
-                meanT=mean(sst))
-    yearT=valx %>% 
-      dplyr::filter(year!=2025) %>%
-      group_by(year) %>%
-      summarize(minT=min(sst),
-                maxT=max(sst),
-                meanT=mean(sst))
-    # From EFH descriptions MAFMC - referenced 8/2025
-    #scup 9-27 (16-22 preferred) EFH NMFS-NE-149 1999 Table 1 p.14
-    #BSB 10-22 (17-21 preferred) EFH NMFS-NE-200 2007, pp.8-9
-    P=ggplot(monT, aes(x=month, y=meanT))+
-      geom_line(stat = "identity", linetype=1, linewidth=2)+
-      theme_bw() +
-      theme(panel.border = element_blank(), 
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.line = element_line(colour = "black"))+
-      ylim(-5,30)+
-      ylab('Water Temperature (°C)')+
-      xlab("Month")+
-      scale_x_continuous(breaks=c(2,4,6,8,10,12)) +
-      theme(axis.title.x = element_text(size = 16),
-            axis.text.x = element_text(size = 14),
-            axis.text.y = element_text(size = 14),
-            axis.title.y = element_text(size = 16))
-    P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
-    P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#DF536B')
-    P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#2297E6')
-    P
+      ## add check for NA and get nearest coords if yes
+      vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+      if(is.na(vals[1])){
+        vals <- extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+      }
+      
+      valx=data.frame(vals[,1:length(vals)])
+      valx$time=Ttime
+      colnames(valx)=c('sst', 'time')
+      valx$month=as.numeric(format(Ttime, "%m"))
+      valx$year=as.numeric(format(Ttime, "%Y"))
+      monT=valx %>% 
+        dplyr::filter(year!=2025) %>%
+        group_by(month) %>%
+        summarize(minT=min(sst),
+                  maxT=max(sst),
+                  meanT=mean(sst))
+      yearT=valx %>% 
+        dplyr::filter(year!=2025) %>%
+        group_by(year) %>%
+        summarize(minT=min(sst),
+                  maxT=max(sst),
+                  meanT=mean(sst))
+      # From EFH descriptions MAFMC - referenced 8/2025
+      #scup 9-27 (16-22 preferred) EFH NMFS-NE-149 1999 Table 1 p.14
+      #BSB 10-22 (17-21 preferred) EFH NMFS-NE-200 2007, pp.8-9
+      P=ggplot(monT, aes(x=month, y=meanT))+
+        geom_line(stat = "identity", linetype=1, linewidth=2)+
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(colour = "black"))+
+        ylim(-5,30)+
+        ylab('Water Temperature (°C)')+
+        xlab("Month")+
+        scale_x_continuous(breaks=c(2,4,6,8,10,12)) +
+        theme(axis.title.x = element_text(size = 16),
+              axis.text.x = element_text(size = 14),
+              axis.text.y = element_text(size = 14),
+              axis.title.y = element_text(size = 16))
+      P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
+      P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#DF536B')
+      P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#2297E6')
+      P
     })
     
     output$SSTplot <- 
@@ -383,6 +391,20 @@ server <- function(input, output, session) {
     output$habTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       int <- sf::st_intersects(check, NRHA.val$geometry)
+      zs1=NRHA.val$scupYRhab[int[[1]]]
+      # zs2=NRHA.val$scupSPhab[int[[1]]]
+      # zs3=NRHA.val$scupSMhab[int[[1]]]
+      # zs4=NRHA.val$scupFLhab[int[[1]]]
+      # zs5=NRHA.val$scupWThab[int[[1]]]
+      zsall= zs1=="None"
+      zb1=NRHA.val$bsbYRhab[int[[1]]]
+      zball = zb1=="None"
+      # output$surveyscup= renderText({
+      #   paste("Scup survey modification = ", zsall)
+      # })
+      # output$surveybsb= renderText({
+      #   paste("Black sea bass survey modification = ", zball)
+      # })
       habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
                                NRHA.val$scupSPhab[int[[1]]],
                                NRHA.val$scupSMhab[int[[1]]],
@@ -403,23 +425,47 @@ server <- function(input, output, session) {
     
     ### Essential Fish Habitat at selected coordinates
     efh=reactive({
-    check=sf::st_point(c(Lonx, Latx))
-    intefh <- sf::st_intersects(check, MIDefh$geometry)
-    x=MIDefh$SITENAME_L[intefh[[1]]]
-    y=MIDefh$LIFESTAGE[intefh[[1]]]
-    df=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
-    for(i in 1:length(intefh[[1]])){
-      df[i,1]=paste(y[i],x[i], sep=' ')
-    }
-    colnames(df)="Essential Fish Habitat"
-    df
+      check=sf::st_point(c(Lonx, Latx))
+      intefh <- sf::st_intersects(check, MIDefh$geometry)
+      x=MIDefh$SITENAME_L[intefh[[1]]]
+      y=MIDefh$LIFESTAGE[intefh[[1]]]
+      df=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+      for(i in 1:length(intefh[[1]])){
+        df[i,1]=paste(y[i],x[i], sep=' ')
+      }
+      # c1=!("Black Sea Bass" %in% x) #df$EFH #output$EFHTable #MIDefh$SITENAME_L[int[[1]]]
+      # c2=!("Scup" %in% x) #df$EFH #output$EFHTable  #MIDefh$SITENAME_L[int[[1]]]
+      # areamod=ifelse((c1==T| c2==T), TRUE, FALSE) # if area is EFH for either species count it as habitat
+      # output$efhc1= renderText({
+      #   paste("EFH black sea bass modification = ", c1)
+      # })
+      # output$efhc2= renderText({
+      #   paste("EFH Scup modification = ", c2)
+      # })
+      # output$areamod2= renderText({
+      #   paste("Area modification = ", areamod)
+      # })
+      colnames(df)="Essential Fish Habitat"
+      df
     })
+    
+    # Areamod <- reactive(
+    #   x=observe({
+    #     efh$areamod
+    #   }),
+    #   print(Areamod$x)
+    # )
+
+    # output$efhareamod <- renderText({
+      # paste("EFH modification = ", efh$areamod)
+      # paste("EFH modification = ", efh$areamod)
+    # })
     
     output$EFHTable = 
       renderTable(
         efh(),
         colnames=T
-    )
+      )
     
     #  output$EFHTable = renderTable({
     #   check=sf::st_point(c(Lonx, Latx))
@@ -467,7 +513,6 @@ server <- function(input, output, session) {
     ## this can be modified with ifelse to check on EFH and survey presence at site
     Rarea <- reactive({
       # AreaN <- reactive()
-      
       # observe({
       #   EFHTable
       # c1="Black Sea Bass" %in% output$EFHTable #MIDefh$SITENAME_L[int[[1]]]
@@ -476,11 +521,40 @@ server <- function(input, output, session) {
       # print(c1)
       # print(c2)
       # areamod=ifelse((c1==T| c2==T), 1, 0) # if area is EFH for either species count it as habitat
-      
-      AreaN=data.frame(input$cageN * input$cageL * input$cageW) # * areamod)
+      # AreaN=data.frame(input$cageN * input$cageL * input$cageW) # * areamod)
+      # colnames(AreaN)='Square feet added'
+      # AreaN$`Cubic feet added`=AreaN*input$cageH
+      # AreaN
+      ## check EFH
+      check=sf::st_point(c(Lonx, Latx))
+      intefh <- sf::st_intersects(check, MIDefh$geometry)
+      x=MIDefh$SITENAME_L[intefh[[1]]]
+      y=MIDefh$LIFESTAGE[intefh[[1]]]
+      df=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+      for(i in 1:length(intefh[[1]])){
+        df[i,1]=paste(y[i],x[i], sep=' ')
+      }
+      c1="Black Sea Bass" %in% x
+      c2="Scup" %in% x
+      # check Survey
+      check=sf::st_point(c(Lonx, Latx))
+      int <- sf::st_intersects(check, NRHA.val$geometry)
+      zs1=NRHA.val$scupYRhab[int[[1]]]
+      zsall= zs1=="None"
+      zb1=NRHA.val$bsbYRhab[int[[1]]]
+      zball = zb1=="None"
+      ## compare to credit as habitat
+      scupmod=ifelse((c2==F | zsall==T), 0, 1) # NO credit if area not EFH for scup OR scup absent from survey
+      bsbmod=ifelse((c1==F| zball==T), 0, 1) # NO credit if area not EFH for bsb OR bsb absent from survey
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod)
       colnames(AreaN)='Square feet added'
-      AreaN$`Cubic feet added`=AreaN*input$cageH
-      AreaN
+      AreaN$`Cubic feet added`=AreaN$`Square feet added`*input$cageH
+      scupAreaN=data.frame(input$cageN * input$cageL * input$cageW * scupmod)
+      colnames(scupAreaN)='Square feet added'
+      scupAreaN$`Cubic feet added`=scupAreaN$`Square feet added`*input$cageH
+      AreaN2=rbind(AreaN, scupAreaN)
+      rownames(AreaN2)=c('Black sea bass', 'Scup')
+      AreaN2
     })
     
     output$AreaTable <- 
@@ -488,7 +562,47 @@ server <- function(input, output, session) {
         Rarea(),
         rownames=T
       )
-      # })
+    output$downloader <- 
+      downloadHandler(
+        paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),
+        content = 
+          function(file)
+          {
+            rmarkdown::render(
+              input = "habitatReport.Rmd",
+              output_file = "built_report.pdf",
+              params = list(
+                tableEFH = efh(),
+                # tableSed = SEDtable(),
+                # tableHab = habTable(),
+                # tableTide = tideTable(),
+                # table5 = loctable(),
+                # table5 =clickloc(),
+                tableArea = Rarea(),
+                plot = Tplot(),
+                tidal=input$tidalx,
+                Location=input$projloc, 
+                Depth=input$depth,
+                gear=input$gearGroup,
+                gearIn=input$gearIn,
+                gearOut=input$gearOut,
+                Farm=input$farmname,
+                Number=input$cageN,
+                Length=input$cageL,
+                Width=input$cageW,
+                Height=input$cageH,
+                Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1],
+                Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2])#,
+              # Lat=Latx,
+              # Lon=Lonx)
+            ) 
+            readBin(con = "built_report.pdf", 
+                    what = "raw",
+                    n = file.info("built_report.pdf")[, "size"]) %>%
+              writeBin(con = file)
+          }
+      )
+    # })
   })
   #####_____________________________________________________________________________________________
   ### Drop a marker to use for coordinates instead of Click if GIS aquaculture layer does not include farm
@@ -499,8 +613,8 @@ server <- function(input, output, session) {
     Areax=NA
     clickloc=reactive({
       df=data.frame("Lon"=Lonx,
-                      "Lat"=Latx,
-                      "Area"=Areax)
+                    "Lat"=Latx,
+                    "Area"=Areax)
       df
     })
     output$loctable <- renderTable(
@@ -605,6 +719,20 @@ server <- function(input, output, session) {
     output$habTable = renderTable({
       check=sf::st_point(c(Lonx, Latx))
       int <- sf::st_intersects(check, NRHA.val$geometry)
+      zs1=NRHA.val$scupYRhab[int[[1]]]
+      # zs2=NRHA.val$scupSPhab[int[[1]]]
+      # zs3=NRHA.val$scupSMhab[int[[1]]]
+      # zs4=NRHA.val$scupFLhab[int[[1]]]
+      # zs5=NRHA.val$scupWThab[int[[1]]]
+      zsall= zs1=="None"
+      zb1=NRHA.val$bsbYRhab[int[[1]]]
+      zball = zb1=="None"
+      output$surveyscup= renderText({
+        paste("Scup survey modification = ", zsall)
+      })
+      output$surveybsb= renderText({
+        paste("Black sea bass survey modification = ", zball)
+      })
       habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
                                NRHA.val$scupSPhab[int[[1]]],
                                NRHA.val$scupSMhab[int[[1]]],
@@ -634,9 +762,33 @@ server <- function(input, output, session) {
       for(i in 1:length(intefh[[1]])){
         df[i,1]=paste(y[i],x[i], sep=' ')
       }
+      # c1="Black Sea Bass" %in% x #df$EFH #output$EFHTable #MIDefh$SITENAME_L[int[[1]]]
+      # c2="Scup" %in% x #df$EFH #output$EFHTable  #MIDefh$SITENAME_L[int[[1]]]
+      # areamod=ifelse((c1==T| c2==T), TRUE, FALSE) # if area is EFH for either species count it as habitat
+      # output$efhc1= renderText({
+      #   paste("EFH BSB modification = ", c1)
+      # })
+      # output$efhc2= renderText({
+      #   paste("EFH Scup modification = ", c2)
+      # })
+      # output$areamod2= renderText({
+      #   paste("Area modification = ", areamod)
+      # })
       colnames(df)="Essential Fish Habitat"
       df
     })
+    
+    # Areamod <- reactive(
+    #   x=observe({
+    #     efh$areamod
+    #   }),
+    #   print(Areamod$x)
+    # )
+    # 
+    
+    # output$efhareamod <- renderText({
+    #   paste("EFH modification = ", efh$areamod)
+    # })
     
     output$EFHTable = 
       renderTable(
@@ -684,22 +836,38 @@ server <- function(input, output, session) {
     colnames = TRUE,
     )
     
+    
     Rarea <- reactive({
-      # AreaN <- reactive()
-      
-      # observe({
-      #   EFHTable
-      # c1="Black Sea Bass" %in% output$EFHTable #MIDefh$SITENAME_L[int[[1]]]
-      # c2="Scup" %in% output$EFHTable  #MIDefh$SITENAME_L[int[[1]]]
-      # })
-      # print(c1)
-      # print(c2)
-      # areamod=ifelse((c1==T| c2==T), 1, 0) # if area is EFH for either species count it as habitat
-      
-      AreaN=data.frame(input$cageN * input$cageL * input$cageW) # * areamod)
+      # check EFH
+      check=sf::st_point(c(Lonx, Latx))
+      intefh <- sf::st_intersects(check, MIDefh$geometry)
+      x=MIDefh$SITENAME_L[intefh[[1]]]
+      y=MIDefh$LIFESTAGE[intefh[[1]]]
+      df=data.frame(matrix(nrow=length(intefh[[1]]), ncol=1))
+      for(i in 1:length(intefh[[1]])){
+        df[i,1]=paste(y[i],x[i], sep=' ')
+      }
+      c1="Black Sea Bass" %in% x
+      c2="Scup" %in% x
+      # check Survey
+      check=sf::st_point(c(Lonx, Latx))
+      int <- sf::st_intersects(check, NRHA.val$geometry)
+      zs1=NRHA.val$scupYRhab[int[[1]]]
+      zsall= zs1=="None"
+      zb1=NRHA.val$bsbYRhab[int[[1]]]
+      zball = zb1=="None"
+      ## compare to credit as habitat
+      scupmod=ifelse((c2==F | zsall==T), 0, 1) # NO credit if area not EFH for scup OR scup absent from survey
+      bsbmod=ifelse((c1==F| zball==T), 0, 1) # NO credit if area not EFH for bsb OR bsb absent from survey
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod)
       colnames(AreaN)='Square feet added'
-      AreaN$`Cubic feet added`=AreaN*input$cageH
-      AreaN
+      AreaN$`Cubic feet added`=AreaN$`Square feet added`*input$cageH
+      scupAreaN=data.frame(input$cageN * input$cageL * input$cageW * scupmod)
+      colnames(scupAreaN)='Square feet added'
+      scupAreaN$`Cubic feet added`=scupAreaN$`Square feet added`*input$cageH
+      AreaN2=rbind(AreaN, scupAreaN)
+      rownames(AreaN2)=c('Black sea bass', 'Scup')
+      AreaN2
     })
     
     output$AreaTable <- 
@@ -707,48 +875,88 @@ server <- function(input, output, session) {
         Rarea(),
         rownames=T
       )
+    output$downloader <- 
+      downloadHandler(
+        paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),
+        content = 
+          function(file)
+          {
+            rmarkdown::render(
+              input = "habitatReport.Rmd",
+              output_file = "built_report.pdf",
+              params = list(
+                tableEFH = efh(),
+                # tableSed = SEDtable(),
+                # tableHab = habTable(),
+                # tableTide = tideTable(),
+                #table5 = loctable(),
+                # table5 =clickloc(),
+                tableArea = Rarea(),
+                plot = Tplot(),
+                tidal=input$tidalx,
+                Location=input$projloc, 
+                Depth=input$depth,
+                gear=input$gearGroup,
+                gearIn=input$gearIn,
+                gearOut=input$gearOut,
+                Farm=input$farmname,
+                Number=input$cageN,
+                Length=input$cageL,
+                Width=input$cageW,
+                Height=input$cageH,
+                Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1],
+                Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2])#,
+              # Lat=Latx,
+              # Lon=Lonx)
+            ) 
+            readBin(con = "built_report.pdf", 
+                    what = "raw",
+                    n = file.info("built_report.pdf")[, "size"]) %>%
+              writeBin(con = file)
+          }
+      )
   })
   ####_________________________________________ end of map input section
-  output$downloader <- 
-    downloadHandler(
-      paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),
-      content = 
-        function(file)
-        {
-          rmarkdown::render(
-            input = "habitatReport.Rmd",
-            output_file = "built_report.pdf",
-            params = list(
-              #table1 = efh(),
-              #table2 = SEDtable(),
-              #table3 = habTable(),
-              #table4 = tideTable(),
-              #table5 = loctable(),
-              # table5 =clickloc(),
-              # table6 = Rarea(),
-              plot = Tplot(),
-              tidal=input$tidalx,
-              Location=input$projloc, 
-              Depth=input$depth,
-              gear=input$gearGroup,
-              gearIn=input$gearIn,
-              gearOut=input$gearOut,
-              Farm=input$farmname,
-              Number=input$cageN,
-              Length=input$cageL,
-              Width=input$cageW,
-              Height=input$cageH,
-              Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1],
-              Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2])#,
-            # Lat=Latx,
-            # Lon=Lonx)
-          ) 
-          readBin(con = "built_report.pdf", 
-                  what = "raw",
-                  n = file.info("built_report.pdf")[, "size"]) %>%
-            writeBin(con = file)
-        }
-    )
+  # output$downloader <- 
+  #   downloadHandler(
+  #     paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),
+  #     content = 
+  #       function(file)
+  #       {
+  #         rmarkdown::render(
+  #           input = "habitatReport.Rmd",
+  #           output_file = "built_report.pdf",
+  #           params = list(
+  #             # tableEFH = efh(),
+  #             # tableSed = SEDtable(),
+  #             # tableHab = habTable(),
+  #             #tableTide = tideTable(),
+  #             #table5 = loctable(),
+  #             # table5 =clickloc(),
+  #             tableArea = Rarea(),
+  #             plot = Tplot(),
+  #             tidal=input$tidalx,
+  #             Location=input$projloc, 
+  #             Depth=input$depth,
+  #             gear=input$gearGroup,
+  #             gearIn=input$gearIn,
+  #             gearOut=input$gearOut,
+  #             Farm=input$farmname,
+  #             Number=input$cageN,
+  #             Length=input$cageL,
+  #             Width=input$cageW,
+  #             Height=input$cageH,
+  #             Lonx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][1],
+  #             Latx=NESaquaculture$centroid[[which(NESaquaculture$objectid==RV$Clicks)]][2])#,
+  #           # Lat=Latx,
+  #           # Lon=Lonx)
+  #         ) 
+  #         readBin(con = "built_report.pdf", 
+  #                 what = "raw",
+  #                 n = file.info("built_report.pdf")[, "size"]) %>%
+  #           writeBin(con = file)
+  #       }
+  #   )
 }
 
 shinyApp(ui = ui, server = server)
