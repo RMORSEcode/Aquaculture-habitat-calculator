@@ -7,6 +7,10 @@ date: "`r format(Sys.Date(),'%B %e, %Y')`"
 params: 
   tableEFH: 'NULL'
   tableArea: 'NULL'
+  tableSurvey: 'NULL'
+  tableSed: 'NULL'
+  tableTide: 'NULL'
+  loctable: 'NULL'
   plot: 'NULL'
   tidal: NA
   Location: NA
@@ -93,8 +97,9 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 `r params[["Length"]]` **x** `r params[["Width"]]` **x** `r params[["Height"]]`  
 
 **Farm location (latitude, longitude):**  
-`r params[["Lat"]]`, `r params[["Lon"]]`
-
+```{r, tidy='styler', echo=FALSE}
+knitr::kable(params[["loctable"]])
+```
 # **Essential Fish Habitat at selected site**  
 ```{r, tidy='styler', echo=FALSE}
 knitr::kable(params[["tableEFH"]], 
@@ -103,19 +108,19 @@ knitr::kable(params[["tableEFH"]],
 
 # **Survey-based habitat quality for black sea bass and scup at selected site**  
 ```{r, tidy='styler', echo=FALSE}
-knitr::kable(params[["table3"]], 
+knitr::kable(params[["tableSurvey"]], 
              caption="Survey-based presence")
 ```
 
 # **Sediment classification at selected site**  
 ```{r, tidy='styler', echo=FALSE}
-knitr::kable(params[["table2"]], 
+knitr::kable(params[["tableSed"]], 
              caption="Sediment type")
 ```
 
 # **Tidal range at selected site**  
 ```{r, tidy='styler', echo=FALSE}
-knitr::kable(params[["table4"]], 
+knitr::kable(params[["tableTide"]], 
              caption="Tidal range (ft)")
 ```
 
@@ -131,7 +136,7 @@ knitr::kable(params[["tableArea"]],
              caption="Habitat provided")
 ```
 # **Summary**  
-Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[["Number"]]` cages results in the addition of `r params[["tableArea"]][1,1]` square feet of additional structured habitat for black sea bass and `r params[["tableArea"]][1,2]`.
+Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[["Number"]]` cages results in the addition of `r params[["tableArea"]][1,1]` square feet of additional structured habitat for black sea bass and `r params[["tableArea"]][2,1]` square feet of additional structured habitat for scup.
 
 
   

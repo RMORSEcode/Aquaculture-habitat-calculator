@@ -6,7 +6,7 @@ library(ggplot2)
 library(ggmap)
 library(maps)
 library(mapdata)
-library(sf); sf_use_s2(FALSE)
+library(sf); sf_use_s2(TRUE)
 
 wd="C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/"
 
@@ -128,6 +128,8 @@ MIDefh=sf::st_transform(MIDATLefh, "WGS84")
 NEWefh=sf::st_transform(NEWENGefh, "WGS84")
 BSBefh=MIDefh %>% dplyr::filter(SITENAME_L=="Black Sea Bass")
 SCUPefh=MIDefh %>% dplyr::filter(SITENAME_L=="Scup")
+
+p <- poly2nb(st_make_valid(MIDATLefh))
 
 map("worldHires", xlim=c(-78,-68),ylim=c(36.5,45), fill=T,border=0,col="gray70")
 map.axes(las=1)

@@ -5,7 +5,7 @@ library(shiny)
 library(bslib)
 library(leaflet)
 library(leaflet.extras)
-library(sf)#; sf_use_s2(FALSE)
+library(sf); sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
 library(shinyWidgets)
@@ -288,24 +288,44 @@ server <- function(input, output, session) {
     #            "Lat"=Latx,
     #            "Area"=Areax)
     ### Lat Long and area of lease site from GIS
-    output$loctable <- renderTable(
-      data.frame("Lon"=Lonx,
-                 "Lat"=Latx,
-                 "Area"=Areax),
-      # clickloc(),
-      striped = T,
-      hover = F,
-      bordered = T,
-      spacing = c("s", "xs", "m", "l"),
-      width = "auto",
-      align = NULL,
-      rownames = FALSE,
-      colnames = TRUE,
-      digits = 4,
-      na = "NA",
-      quoted = FALSE
-    )
-    
+    # output$loctable <- renderTable(
+    #   data.frame("Lon"=Lonx,
+    #              "Lat"=Latx,
+    #              "Area"=Areax),
+    #   # clickloc(),
+    #   striped = T,
+    #   hover = F,
+    #   bordered = T,
+    #   spacing = c("s", "xs", "m", "l"),
+    #   width = "auto",
+    #   align = NULL,
+    #   rownames = FALSE,
+    #   colnames = TRUE,
+    #   digits = 4,
+    #   na = "NA",
+    #   quoted = FALSE
+    # )
+    LOCtable <- reactive({
+      loc=data.frame("Lon"=Lonx,
+                     "Lat"=Latx,
+                     "Area"=Areax)
+      loc
+    })
+    output$loctable <-
+      renderTable(
+        LOCtable(),
+        striped = T,
+        hover = F,
+        bordered = T,
+        spacing = c("s", "xs", "m", "l"),
+        width = "auto",
+        align = NULL,
+        rownames = FALSE,
+        colnames = TRUE,
+        digits = 4,
+        na = "NA",
+        quoted = FALSE
+      )
     ### extract OISST temperature data at site
     nearestLand <- function (points, raster, max_distance) {
       nearest <- function (lis, raster) {
@@ -388,23 +408,44 @@ server <- function(input, output, session) {
       })
     
     ### Survey presence at selected coordinates
-    output$habTable = renderTable({
+    # output$habTable = renderTable({
+    #   check=sf::st_point(c(Lonx, Latx))
+    #   int <- sf::st_intersects(check, NRHA.val$geometry)
+    #   zs1=NRHA.val$scupYRhab[int[[1]]]
+    #   # zs2=NRHA.val$scupSPhab[int[[1]]]
+    #   # zs3=NRHA.val$scupSMhab[int[[1]]]
+    #   # zs4=NRHA.val$scupFLhab[int[[1]]]
+    #   # zs5=NRHA.val$scupWThab[int[[1]]]
+    #   zsall= zs1=="None"
+    #   zb1=NRHA.val$bsbYRhab[int[[1]]]
+    #   zball = zb1=="None"
+    #   # output$surveyscup= renderText({
+    #   #   paste("Scup survey modification = ", zsall)
+    #   # })
+    #   # output$surveybsb= renderText({
+    #   #   paste("Black sea bass survey modification = ", zball)
+    #   # })
+    #   habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
+    #                            NRHA.val$scupSPhab[int[[1]]],
+    #                            NRHA.val$scupSMhab[int[[1]]],
+    #                            NRHA.val$scupFLhab[int[[1]]],
+    #                            NRHA.val$scupWThab[int[[1]]]),
+    #                   "Black.sea.bass"=c(NRHA.val$bsbYRhab[int[[1]]],
+    #                                      NRHA.val$bsbSPhab[int[[1]]],
+    #                                      NRHA.val$bsbSMhab[int[[1]]],
+    #                                      NRHA.val$bsbFLhab[int[[1]]],
+    #                                      NRHA.val$bsbWThab[int[[1]]]))
+    #   rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
+    #   colnames(habt)=c("Scup", "Black sea bass")
+    #   habt
+    # },
+    # rownames = TRUE,
+    # colnames = TRUE,
+    # )
+    survtable <- reactive({
+      
       check=sf::st_point(c(Lonx, Latx))
       int <- sf::st_intersects(check, NRHA.val$geometry)
-      zs1=NRHA.val$scupYRhab[int[[1]]]
-      # zs2=NRHA.val$scupSPhab[int[[1]]]
-      # zs3=NRHA.val$scupSMhab[int[[1]]]
-      # zs4=NRHA.val$scupFLhab[int[[1]]]
-      # zs5=NRHA.val$scupWThab[int[[1]]]
-      zsall= zs1=="None"
-      zb1=NRHA.val$bsbYRhab[int[[1]]]
-      zball = zb1=="None"
-      # output$surveyscup= renderText({
-      #   paste("Scup survey modification = ", zsall)
-      # })
-      # output$surveybsb= renderText({
-      #   paste("Black sea bass survey modification = ", zball)
-      # })
       habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
                                NRHA.val$scupSPhab[int[[1]]],
                                NRHA.val$scupSMhab[int[[1]]],
@@ -418,11 +459,14 @@ server <- function(input, output, session) {
       rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
       colnames(habt)=c("Scup", "Black sea bass")
       habt
-    },
-    rownames = TRUE,
-    colnames = TRUE,
-    )
+    })
     
+    output$habTable <-
+      renderTable(
+        survtable(),
+        rownames = TRUE,
+        colnames = TRUE
+      )
     ### Essential Fish Habitat at selected coordinates
     efh=reactive({
       check=sf::st_point(c(Lonx, Latx))
@@ -484,30 +528,57 @@ server <- function(input, output, session) {
     # colnames = TRUE,
     # )
     
-    ### Sediment type at selected coordinates
-    output$SEDTable = renderTable({
+    ### Sediment type and Tides at selected coordinates
+    # output$SEDTable = renderTable({
+    #   check=sf::st_point(c(Lonx, Latx))
+    #   intc <- sf::st_intersects(check, Conmap$geometry)
+    #   sed=data.frame(Conmap$SEDNAME[intc[[1]]])
+    #   colnames(sed)="Sediment Classification"
+    #   sed
+    # },
+    # rownames = F,
+    # colnames = TRUE,
+    # )
+    # 
+    # output$tideTable=renderTable({
+    #   trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+    #   trangeft=trangem*3.28084
+    #   tides=data.frame(trangeft)
+    #   colnames(tides)="Tidal Range (ft)"
+    #   tides
+    #   # check=sf::st_point(c(Lonx, Latx))
+    #   # intrange <- sf::st_intersects(check, tidalRangeM)
+    # },
+    # rownames = F,
+    # colnames = TRUE,
+    # )
+    sedtable <- reactive({
       check=sf::st_point(c(Lonx, Latx))
       intc <- sf::st_intersects(check, Conmap$geometry)
       sed=data.frame(Conmap$SEDNAME[intc[[1]]])
       colnames(sed)="Sediment Classification"
       sed
-    },
-    rownames = F,
-    colnames = TRUE,
-    )
+    })
+    output$SEDTable <-
+      renderTable(
+        sedtable(),
+        rownames = F,
+        colnames = TRUE
+      )
     
-    output$tideTable=renderTable({
+    tidedata <- reactive({
       trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
       trangeft=trangem*3.28084
       tides=data.frame(trangeft)
       colnames(tides)="Tidal Range (ft)"
       tides
-      # check=sf::st_point(c(Lonx, Latx))
-      # intrange <- sf::st_intersects(check, tidalRangeM)
-    },
-    rownames = F,
-    colnames = TRUE,
-    )
+    })
+    output$tideTable=
+      renderTable(
+        tidedata(),
+        rownames = F,
+        colnames = TRUE
+      )
     
     ### Calculate area and volume of gear, modify by EFH overlap and survey presence
     ## this can be modified with ifelse to check on EFH and survey presence at site
@@ -573,10 +644,10 @@ server <- function(input, output, session) {
               output_file = "built_report.pdf",
               params = list(
                 tableEFH = efh(),
-                # tableSed = SEDtable(),
-                # tableHab = habTable(),
-                # tableTide = tideTable(),
-                # table5 = loctable(),
+                tableSed = sedtable(),
+                tableSurvey = survtable(),
+                tableTide = tidedata(),
+                loctable = LOCtable(),
                 # table5 =clickloc(),
                 tableArea = Rarea(),
                 plot = Tplot(),
@@ -618,10 +689,10 @@ server <- function(input, output, session) {
       df
     })
     output$loctable <- renderTable(
-      data.frame("Lon"=Lonx,
-                 "Lat"=Latx,
-                 "Area"=Areax),
-      # clickloc(),
+      # data.frame("Lon"=Lonx,
+      #            "Lat"=Latx,
+      #            "Area"=Areax),
+      clickloc(),
       striped = T,
       hover = F,
       bordered = T,
@@ -716,23 +787,44 @@ server <- function(input, output, session) {
     
     
     ### marker based coordinates for survey presence (supersedes click)
-    output$habTable = renderTable({
+    # output$habTable = renderTable({
+    #   check=sf::st_point(c(Lonx, Latx))
+    #   int <- sf::st_intersects(check, NRHA.val$geometry)
+    #   zs1=NRHA.val$scupYRhab[int[[1]]]
+    #   # zs2=NRHA.val$scupSPhab[int[[1]]]
+    #   # zs3=NRHA.val$scupSMhab[int[[1]]]
+    #   # zs4=NRHA.val$scupFLhab[int[[1]]]
+    #   # zs5=NRHA.val$scupWThab[int[[1]]]
+    #   zsall= zs1=="None"
+    #   zb1=NRHA.val$bsbYRhab[int[[1]]]
+    #   zball = zb1=="None"
+    #   output$surveyscup= renderText({
+    #     paste("Scup survey modification = ", zsall)
+    #   })
+    #   output$surveybsb= renderText({
+    #     paste("Black sea bass survey modification = ", zball)
+    #   })
+    #   habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
+    #                            NRHA.val$scupSPhab[int[[1]]],
+    #                            NRHA.val$scupSMhab[int[[1]]],
+    #                            NRHA.val$scupFLhab[int[[1]]],
+    #                            NRHA.val$scupWThab[int[[1]]]),
+    #                   "Black.sea.bass"=c(NRHA.val$bsbYRhab[int[[1]]],
+    #                                      NRHA.val$bsbSPhab[int[[1]]],
+    #                                      NRHA.val$bsbSMhab[int[[1]]],
+    #                                      NRHA.val$bsbFLhab[int[[1]]],
+    #                                      NRHA.val$bsbWThab[int[[1]]]))
+    #   rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
+    #   colnames(habt)=c("Scup", "Black sea bass")
+    #   habt
+    # },
+    # rownames = TRUE,
+    # colnames = TRUE,
+    # )
+    survtable <- reactive({
+      
       check=sf::st_point(c(Lonx, Latx))
       int <- sf::st_intersects(check, NRHA.val$geometry)
-      zs1=NRHA.val$scupYRhab[int[[1]]]
-      # zs2=NRHA.val$scupSPhab[int[[1]]]
-      # zs3=NRHA.val$scupSMhab[int[[1]]]
-      # zs4=NRHA.val$scupFLhab[int[[1]]]
-      # zs5=NRHA.val$scupWThab[int[[1]]]
-      zsall= zs1=="None"
-      zb1=NRHA.val$bsbYRhab[int[[1]]]
-      zball = zb1=="None"
-      output$surveyscup= renderText({
-        paste("Scup survey modification = ", zsall)
-      })
-      output$surveybsb= renderText({
-        paste("Black sea bass survey modification = ", zball)
-      })
       habt=data.frame("Scup"=c(NRHA.val$scupYRhab[int[[1]]],
                                NRHA.val$scupSPhab[int[[1]]],
                                NRHA.val$scupSMhab[int[[1]]],
@@ -746,10 +838,14 @@ server <- function(input, output, session) {
       rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
       colnames(habt)=c("Scup", "Black sea bass")
       habt
-    },
-    rownames = TRUE,
-    colnames = TRUE,
-    )
+    })
+    
+    output$habTable <-
+      renderTable(
+        survtable(),
+        rownames = TRUE,
+        colnames = TRUE
+      )
     ### marker based coordinates for EFH (supersedes click)
     
     ### Essential Fish Habitat at selected coordinates
@@ -812,30 +908,56 @@ server <- function(input, output, session) {
     # colnames = TRUE,
     # )
     
-    ### marker based coordinates for sediments (supersedes click)
-    output$SEDTable = renderTable({
+    ### marker based coordinates for sediments and tides (supersedes click)
+    # output$SEDTable = renderTable({
+    #   check=sf::st_point(c(Lonx, Latx))
+    #   intc <- sf::st_intersects(check, Conmap$geometry)
+    #   sed=data.frame(Conmap$SEDNAME[intc[[1]]])
+    #   colnames(sed)="Sediment Classification"
+    #   sed
+    # },
+    # rownames = F,
+    # colnames = TRUE,
+    # )
+    # output$tideTable=renderTable({
+    #   trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+    #   trangeft=trangem*3.28084
+    #   tides=data.frame(trangeft)
+    #   colnames(tides)="Tidal Range (ft)"
+    #   tides
+    #   # check=sf::st_point(c(Lonx, Latx))
+    #   # intrange <- sf::st_intersects(check, tidalRangeM)
+    # },
+    # rownames = F,
+    # colnames = TRUE,
+    # )
+    sedtable <- reactive({
       check=sf::st_point(c(Lonx, Latx))
       intc <- sf::st_intersects(check, Conmap$geometry)
       sed=data.frame(Conmap$SEDNAME[intc[[1]]])
       colnames(sed)="Sediment Classification"
       sed
-    },
-    rownames = F,
-    colnames = TRUE,
-    )
-    output$tideTable=renderTable({
+    })
+    output$SEDTable <-
+      renderTable(
+        sedtable(),
+        rownames = F,
+        colnames = TRUE
+      )
+    
+    tidedata <- reactive({
       trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
       trangeft=trangem*3.28084
       tides=data.frame(trangeft)
       colnames(tides)="Tidal Range (ft)"
       tides
-      # check=sf::st_point(c(Lonx, Latx))
-      # intrange <- sf::st_intersects(check, tidalRangeM)
-    },
-    rownames = F,
-    colnames = TRUE,
-    )
-    
+    })
+    output$tideTable=
+      renderTable(
+        tidedata(),
+        rownames = F,
+        colnames = TRUE
+      )
     
     Rarea <- reactive({
       # check EFH
@@ -886,11 +1008,11 @@ server <- function(input, output, session) {
               output_file = "built_report.pdf",
               params = list(
                 tableEFH = efh(),
-                # tableSed = SEDtable(),
-                # tableHab = habTable(),
-                # tableTide = tideTable(),
+                tableSed = sedtable(),
+                tableSurvey = survtable(),
+                tableTide = tidedata(),
                 #table5 = loctable(),
-                # table5 =clickloc(),
+                loctable =clickloc(),
                 tableArea = Rarea(),
                 plot = Tplot(),
                 tidal=input$tidalx,
