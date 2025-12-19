@@ -35,7 +35,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ### add text box with black border ### #5761C0  style = "border-style: solid; border-color: #C6E6F0#5EB6D9; background-color: #5EB6D9;",
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("This calculator predicts the habitat provided by aquaculture gear to scup and black sea bass. This tool applies to oyster farms located within the geographic range of Virginia to New Hampshire, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
-                                  p("To use the tool, please fill in information about your farm in sections 1-2 below.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
+                                  p("To use the tool, please fill in information about your farm in sections 1-2 below. Note that gear in inter-tidal zones does not count toward habitat creation.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              #p("To download a report, click on ",strong("Generate PDF Report")," at the bottom", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              helpText(br()),
                              
@@ -49,8 +49,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              # selectInput("tides", div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"), c("Subtidal", "Intertidal"), width ="100%"),
                              prettyRadioButtons( 
                                inputId = "tidalx",
-                               label = div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'"),
-                               choices = c("Subtidal", "Intertidal"),
+                               label = div(strong("Tidal zone information:"),"Please select the appropriate tidal zone at the farm site - if the gear is always submerged please select 'subtidal'. Habitat provisioning is not currently credited for intertidal gear."),
+                               choices = c("Intertidal","Subtidal"),
                                outline = TRUE,
                                plain = TRUE,
                                shape = "square",
@@ -127,7 +127,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              
                              helpText(h5("Survey-based habitat quality for black sea bass and scup at selected site:")),
                              tableOutput('habTable'),
-                             helpText(h5("Average surface water temperature by month (black line) with minimum and maximumat monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
+                             helpText(h5("Average surface water temperature by month (black line) with minimum and maximum monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
                              plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
@@ -163,7 +163,35 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                h6(tags$a(target="_blank", href="https://www.fisheries.noaa.gov/new-england-mid-atlantic/aquaculture/milford-labs-gopro-aquaculture-project",
                                          "Learn more about the NOAA Milford Lab's GoPro Aquaculture Project here >")
                                ),
-                             )
+                               br(),
+                               tags$p(
+                                 h4("Project Team"),
+                                 tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/renee-mercaldo-allen", "Renee Mercaldo-Allen,"),
+                                 tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
+                                 tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
+                                 tags$a(target="_blank", href="https://coastalscience.noaa.gov/staff/christopher-schillaci/", "Chris Schillaci,"), #https://www.linkedin.com/in/chris-schillaci/
+                               ),
+                               div( style = "border-style: solid; border-radius: 10px; border-color: #0085CA; background-color: #0085CA;",
+                                    p("Send questions or comments to:",style="text-align:center; padding-left:10px; padding-right:10px; font-size:16px; color: white"),
+                                    p("ES.Tools@noaa.gov",style="text-align:center; padding-left:10px; padding-right:10px; font-size:16px; color: white"),
+                               ),
+                               tags$p(
+                                 h4("References:"),
+                                 p("Ambrose A, Munroe D. Habitat usage on an oyster aquaculture farm: Impacts of farm activities and biological fouling on marine communities. J Shellfish Res 43(3): 389-397. 2025. https://doi.org/10.2983/035.043.0310"
+                                   ),
+                                 p("Luke T. Barrett, Seth J. Theuerkauf, Julie M. Rose, Heidi K. Alleway, Suzanne B. Bricker, Matt Parker, Daniel R. Petrolia, Robert C. Jones, Sustainable growth of non-fed aquaculture can generate valuable ecosystem benefits, Ecosystem Services, Volume 53, 2022, 101396, https://doi.org/10.1016/j.ecoser.2021.101396.
+                                   "),
+                                 p("Mercaldo-Allen R, Auster PJ, Clark P, Dixon MS, Estela E, Liu Y, Milke L, Phillips G, Redman, D, Smith BC, Verkade A, Rose JM. Oyster aquaculture cages provide fish habitat similar to natural structure with minimal differences based on farm location. Front. Mar. Sci., Sec. Marine Fisheries, Aquaculture and Living Resources 10.3389/fmars.2023.1058709. 2023. https://doi.org/10.3389/fmars.2023.1058709"
+                                   ),
+                                 p("Renee Mercaldo-Allen, Ryan Morse, Christopher Schillaci, Peter J Auster, Adrianna Bourget, Paul Clark, Mark Dixon, Kenneth Oliveira, Gillian Phillips, Dylan H Redman, Barry Smith, Julie M Rose, Measures of habitat quality for Black Sea Bass using oyster aquaculture cages, North American Journal of Aquaculture, 2025;, vraf019, https://doi.org/10.1093/naaqua/vraf019"
+                                   ),
+                                 p("Theuerkauf SJ, Barrett LT, Alleway HK, Costa-Pierce BA, St. Gelais A, Jones RC. Habitat value of bivalve shellfish and seaweed aquaculture for fish and invertebrates: Pathways, synthesis and next steps. Rev Aquac. 2021; 14: 54–72. https://doi.org/10.1111/raq.12584"
+                                   ),
+                                 h4("Disclaimer:"),
+                                 p("This is a scientific product and is not an official communication of the National Oceanic and Atmospheric Administration, or the United States Department of Commerce. All NOAA GitHub project code is provided on an ‘as is’ basis and the user assumes responsibility for its use. Any claims against the Department of Commerce or Department of Commerce bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favoring by the Department of Commerce. The Department of Commerce seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DOC or the United States Government."
+                                 ),
+                                 ),
+                               )
                     )
                     
                   )
@@ -583,6 +611,8 @@ server <- function(input, output, session) {
     ### Calculate area and volume of gear, modify by EFH overlap and survey presence
     ## this can be modified with ifelse to check on EFH and survey presence at site
     Rarea <- reactive({
+      # check intertidal - no credit for intertidal sites, only for subtidal
+      tidemod=ifelse(input$tidalx == 'Subtidal', 1, 0)
       # AreaN <- reactive()
       # observe({
       #   EFHTable
@@ -617,10 +647,10 @@ server <- function(input, output, session) {
       ## compare to credit as habitat
       scupmod=ifelse((c2==F | zsall==T), 0, 1) # NO credit if area not EFH for scup OR scup absent from survey
       bsbmod=ifelse((c1==F| zball==T), 0, 1) # NO credit if area not EFH for bsb OR bsb absent from survey
-      AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod)
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod * tidemod)
       colnames(AreaN)='Square feet added'
       AreaN$`Cubic feet added`=AreaN$`Square feet added`*input$cageH
-      scupAreaN=data.frame(input$cageN * input$cageL * input$cageW * scupmod)
+      scupAreaN=data.frame(input$cageN * input$cageL * input$cageW * scupmod * tidemod)
       colnames(scupAreaN)='Square feet added'
       scupAreaN$`Cubic feet added`=scupAreaN$`Square feet added`*input$cageH
       AreaN2=rbind(AreaN, scupAreaN)
@@ -960,6 +990,8 @@ server <- function(input, output, session) {
       )
     
     Rarea <- reactive({
+      # check intertidal - no credit for intertidal sites, only for subtidal
+      tidemod=ifelse(input$tidalx == 'Subtidal', 1, 0)
       # check EFH
       check=sf::st_point(c(Lonx, Latx))
       intefh <- sf::st_intersects(check, MIDefh$geometry)
@@ -981,10 +1013,10 @@ server <- function(input, output, session) {
       ## compare to credit as habitat
       scupmod=ifelse((c2==F | zsall==T), 0, 1) # NO credit if area not EFH for scup OR scup absent from survey
       bsbmod=ifelse((c1==F| zball==T), 0, 1) # NO credit if area not EFH for bsb OR bsb absent from survey
-      AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod)
+      AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod * tidemod)
       colnames(AreaN)='Square feet added'
       AreaN$`Cubic feet added`=AreaN$`Square feet added`*input$cageH
-      scupAreaN=data.frame(input$cageN * input$cageL * input$cageW * scupmod)
+      scupAreaN=data.frame(input$cageN * input$cageL * input$cageW * scupmod * tidemod)
       colnames(scupAreaN)='Square feet added'
       scupAreaN$`Cubic feet added`=scupAreaN$`Square feet added`*input$cageH
       AreaN2=rbind(AreaN, scupAreaN)
