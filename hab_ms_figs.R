@@ -30,7 +30,7 @@ legend(-76,36, pch=c(23,23), col='black', pt.bg=c('red', 'yellow'),legend=c('GoP
 dev.off()
 
 
-
+w <- map_data("world")
 
 
 ### EFH maps

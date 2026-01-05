@@ -539,7 +539,7 @@ plot(NRHA.val["bsbYRhab"], breaks=c(0,1,2,3),at=c(0,1,2,3), add=T)
 col=c('white', 'lightblue', 'blue', 'darkblue')
 col=c('white','pink', 'salmon', 'red')
 col=c('black','white', 'pink', 'red') 
-col=c('coral', 'coral2', 'coral3', 'coral4', 'lightsalmon','tomato2', 'tomato', 'tomato3', 'sandybrown', 'goldenrod' 'lightgoldenrodyellow' )
+col=c('coral', 'coral2', 'coral3', 'coral4', 'lightsalmon','tomato2', 'tomato', 'tomato3', 'sandybrown', 'goldenrod', 'lightgoldenrodyellow' )
 col=c('gray90', 'cadetblue1', 'steelblue3', 'royalblue4')
 
 maps::map("worldHires", xlim=c(-77,-65),ylim=c(35,45), fill=T,border=0,col="gray80")

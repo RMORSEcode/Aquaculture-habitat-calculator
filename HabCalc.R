@@ -1,5 +1,7 @@
+# C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator
 # https://test-connect.fisheries.noaa.gov/connect/#/apps/364
 # https://test-connect.fisheries.noaa.gov/Habitat/
+# https://connect.fisheries.noaa.gov/AHC/
 
 library(shiny)
 library(bslib)
@@ -35,7 +37,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              ### add text box with black border ### #5761C0  style = "border-style: solid; border-color: #C6E6F0#5EB6D9; background-color: #5EB6D9;",
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("This calculator predicts the habitat provided by aquaculture gear to scup and black sea bass. This tool applies to oyster farms located within the geographic range of Virginia to New Hampshire, USA.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px;color: white"),
-                                  p("To use the tool, please fill in information about your farm in sections 1-2 below. Note that gear in inter-tidal zones does not count toward habitat creation.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
+                                  p("To use the tool, please fill in information about your farm in sections 1-2 below. Note that gear in intertidal zones does not count toward habitat creation.", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              #p("To download a report, click on ",strong("Generate PDF Report")," at the bottom", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white")),
                              helpText(br()),
                              

@@ -35,11 +35,11 @@ opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
 <!-- # options(tinytex.verbose = TRUE) -->
 <!-- # ``` -->
 
-```{r setupe, echo=FALSE}
+```{r setup, echo=FALSE}
 # A killPrefix hook.
 default_output_hook <- knitr::knit_hooks$get("output")
 knitr::knit_hooks$set( output = function(x, options) {
-
+  
   comment <- knitr::opts_current$get("comment")
   if( is.na(comment) ) comment <- ""
   can_null <- grepl( paste0( comment, "\\s*\\[\\d?\\]" ),
@@ -56,14 +56,15 @@ knitr::knit_hooks$set( output = function(x, options) {
     rep <- paste0( "\n", comment )
     x <- gsub( re, rep,  x )
   }
-    default_output_hook( x, options )
-  })
+  default_output_hook( x, options )
+})
 
 knitr::opts_template$set("kill_prefix"=list(comment=NA, null_prefix=TRUE))
 ```
 
 ```{r, echo=FALSE}
 knitr::opts_chunk$set(opts.label="kill_prefix")
+# knitr::opts_chunk$set(message = FALSE)
 ```
 
 
@@ -87,7 +88,7 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 **Month gear typically goes into the water:**
 `r params[["gearIn"]]`
 
-**Month gear typically goes into the water:**
+**Month gear is typically removed from the water:**
 `r params[["gearOut"]]`
 
 **Gear Quantity:**
@@ -139,7 +140,7 @@ knitr::kable(params[["tableArea"]],
 Shellfish aquaculture gear that creates complex structure can increase the abundance and diversity of wild fishes relative to reference habitats devoid of vertical heterogeneity. Observations of fish behavior in Connecticut suggest that cages provide food, shelter, refuge and other ecological services, much like natural structured habitat. Association of young-of-the-year fish with oyster cages across multiple research locations suggest that aquaculture gear may be utilized as nursery habitat by fish during the early life history stages. The existence of `r params[["Number"]]` cages results in the addition of `r params[["tableArea"]][1,1]` square feet of additional structured habitat for black sea bass and `r params[["tableArea"]][2,1]` square feet of additional structured habitat for scup.
 
 
-  
+
 # **Federal Regulatory Nexus:**  
 Public Interest Factor(s): (1)Water Quality; (2)General Environmental Concerns; (3) Fish and wildlife values.  
 
@@ -148,29 +149,29 @@ Rivers and Harbors Act Section 10 public interest review factors related to wate
 # **Supporting Literature**  
 Literature reviews
 Barrett, L.T., Theuerkauf, S.J., Rose, J.M., Alleway, H.K., Bricker, S.B., Parker, M., Petrolia, D.R., and Jones, R.C. (2022). Sustainable growth of non-fed aquaculture can generate valuable ecosystem benefits. Ecosystem Services 53, 101396.
- 
+
 Clements, J.C., and Comeau, L.A. (2019). Nitrogen removal potential of shellfish aquaculture harvests in eastern Canada: A comparison of culture methods. Aquaculture Reports 13, 100183.
- 
+
 Cornwell, J., Rose, J., Kellogg, L., Luckenbach, M., Bricker, S., Paynter, K., Moore, C., Parker, M., Sanford, L., Wolinski, B., Lacatell, A., Fegley, L., and Hudson, K. (2016). "Panel Recommendations on the Oyster BMP Nutrient and Suspended Sediment Reduction Effectiveness Determination Decision Framework and Nitrogen and Phosphorus Assimilation in Oyster Tissue Reduction Effectiveness for Oyster Aquaculture Practices". (Report to the Chesapeake Bay Program.  Available online at http://www.chesapeakebay.net/documents/Oyster_BMP_1st_Report_Final_Approved_2016-12-19.pdf).
- 
+
 Eastern oysters
 Higgins, C.B., Stephenson, K., and Brown, B.L. (2011). Nutrient bioassimilation capacity of aquacultured oysters: quantification of an ecosystem service. Journal of Environmental Quality 40, 271-277.
 
 Grizzle, R.E., Ward, K.M., Peter, C.R., Cantwell, M., Katz, D., and Sullivan, J. (2017). Growth, morphometrics and nutrient content of farmed eastern oysters, Crassostrea virginica (Gmelin), in New Hampshire, USA. Aquaculture Research 48, 1525-1537.
- 
+
 Reitsma, J., Murphy, D.C., Archer, A.F., and York, R.H. (2017). Nitrogen extraction potential of wild and cultured bivalves harvested from nearshore waters of Cape Cod, USA. Marine Pollution Bulletin 116, 175-181.
- 
+
 Sebastiano, D., Levinton, J.S., Doall, M., and Kamath, S. (2015). Using a Shellfish Harvest Strategy to Extract High Nitrogen Inputs in Urban and Suburban Coastal Bays: Practical and Economic Implications. Journal of Shellfish Research 34, 573-583, 511.
 
 Policy/Resource Management
 Lindahl, O., Hart, R., Hernroth, B., Kollberg, S., Loo, L.-O., Olrog, L., Rehnstam-Holm, A.-S., Svensson, J., Svensson, S., and Syversen, U. (2005). Improving marine water quality by mussel farming - a profitable solution for Swedish society. Ambio 34, 129-136.
- 
+
 Petrolia, D.R., Nyanzu, F., Cebrian, J., Harri, A., Amato, J., and Walton, W.C. (2020). Eliciting expert judgment to inform management of diverse oyster resources for multiple ecosystem services. Journal of Environmental Management 268, 110676.
- 
+
 Rose, J.M., Bricker, S.B., and Ferreira, J.G. (2015). Comparative analysis of modeled nitrogen removal by shellfish farms. Marine Pollution Bulletin 91, 185-190.
- 
+
 Rose, J.M., Bricker, S.B., Tedesco, M.A., and Wikfors, G.H. (2014). A Role for Shellfish Aquaculture in Coastal Nitrogen Management. Environmental Science & Technology 48, 2519-2525.
- 
+
 Petersen, J.K., Hasler, B., Timmermann, K., Nielsen, P., Tørring, D.B., Larsen, M.M., and Holmer, M. (2014). Mussels as a tool for mitigation of nutrients in the marine environment. Marine Pollution Bulletin 82, 137-143.
 
 
