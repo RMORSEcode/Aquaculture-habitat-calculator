@@ -3,6 +3,12 @@
 # https://test-connect.fisheries.noaa.gov/Habitat/
 # https://connect.fisheries.noaa.gov/AHC/
 
+# QR code
+# AHC=qrcode::qr_code('https://connect.fisheries.noaa.gov/AHC/')
+# png("AHClinkQR.png")
+# plot(AHC)
+# dev.off()
+
 library(shiny)
 library(bslib)
 library(leaflet)
@@ -133,10 +139,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
-                             downloadButton(
-                               outputId = "downloader",
-                               label = "Generate PDF Report"
-                             ),
+                             # downloadButton(
+                             #   outputId = "downloader",
+                             #   label = "Generate PDF Report"
+                             # ),
                     ),
                     
                     tabPanel("About", 
