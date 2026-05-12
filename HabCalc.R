@@ -1,7 +1,7 @@
 # C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator
 # https://test-connect.fisheries.noaa.gov/connect/#/apps/364
 # https://test-connect.fisheries.noaa.gov/Habitat/
-# https://connect.fisheries.noaa.gov/AHC/
+# https://connect.fisheries.noaa.gov/AGHC/
 
 # QR code
 # AHC=qrcode::qr_code('https://connect.fisheries.noaa.gov/AHC/')
@@ -26,7 +26,7 @@ library(ggplot2)
 
 ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                 theme = bslib::bs_theme(bootswatch = "cerulean"),
-                helpText(strong("Aquaculture Habitat Calculator Version:", style = "font-size:18px;")),
+                helpText(strong("Aquaculture Gear Habitat Calculator Version:", style = "font-size:18px;")),
                 textOutput("githubversion"),
                 helpText(br()),
                 # setBackgroundImage(src='background1.png'),
@@ -37,7 +37,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                     tabPanel("Habitat Calculator", 
                              # tags$img(src='meatball_BSB_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
                              tags$img(src='white_swoosh_fish3_500pxH_1650pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and multiple oysters on and in cage"),
-                             titlePanel(h1("Aquaculture Habitat Calculator"), windowTitle = "Aquaculture Habitat Calculator"),
+                             titlePanel(h1("Aquaculture Gear Habitat Calculator"), windowTitle = "Aquaculture Gear Habitat Calculator"),
                              helpText(br()),
                              
                              ### add text box with black border ### #5761C0  style = "border-style: solid; border-color: #C6E6F0#5EB6D9; background-color: #5EB6D9;",
@@ -139,20 +139,20 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
-                             # downloadButton(
-                             #   outputId = "downloader",
-                             #   label = "Generate PDF Report"
-                             # ),
+                             downloadButton(
+                               outputId = "downloader",
+                               label = "Generate PDF Report"
+                             ),
                     ),
                     
                     tabPanel("About", 
                              tags$img(src='meatball_BSB_scup_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and five oysters being held in palm, with additional oysters in the background."),
                              # tags$img(src='meatball_BSB_gear_500pxH_1050pxW.png', width = "100%", alt="NOAA branding, NOAA Fisheries Logo, and five oysters being held in palm, with additional oysters in the background."),
-                             titlePanel(h1("Aquaculture Habitat Calculator"), windowTitle = "Aquaculture Habitat Calculator"),
+                             titlePanel(h1("Aquaculture Gear Habitat Calculator"), windowTitle = "Aquaculture Gear Habitat Calculator"),
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
-                                  p("The Aquaculture Habitat Calculator can be used for new permit applications under consideratoin of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("The Aquaculture Gear Habitat Calculator can be used for new permit applications under consideratoin of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Farm location"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Culture method (floating gear vs. off-bottom gear vs. on-bottom)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Tidal information (sub-tidal vs tidal)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
