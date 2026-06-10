@@ -4,7 +4,7 @@
 # https://connect.fisheries.noaa.gov/AGHC/
 
 # QR code
-# AHC=qrcode::qr_code('https://connect.fisheries.noaa.gov/AHC/')
+# AHC=qrcode::qr_code('https://connect.fisheries.noaa.gov/AGHC/')
 # png("AHClinkQR.png")
 # plot(AHC)
 # dev.off()
@@ -23,6 +23,8 @@ library(ncdf4)
 library(lubridate)
 library(dplyr)
 library(ggplot2)
+library(png)
+library(grid)
 
 ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                 theme = bslib::bs_theme(bootswatch = "cerulean"),
@@ -277,6 +279,12 @@ server <- function(input, output, session) {
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-st/cl')]='Sand-silt/clay'
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd/st/cl')]='Sand/silt/clay'
   
+  ### add fish image to SST plot
+  imgsc <- png::readPNG("scup_1.png")
+  grob_img1 <- grid::rasterGrob(imgsc, interpolate = TRUE)
+  imgbsb <- png::readPNG("black-seabass_2.png")
+  grob_img2 <- grid::rasterGrob(imgbsb, interpolate = TRUE)
+  
   ### set layerId for leaflet map for click to add lat/lon
   objectID=NESaquaculture$objectid
   
@@ -380,7 +388,7 @@ server <- function(input, output, session) {
           return (coords[which.min(dists), ])
         }
       }
-      neighbour_list <- extract(raster, points,
+      neighbour_list <- raster::extract(raster, points,
                                 buffer = max_distance,
                                 cellnumbers = TRUE)
       neighbour_list <- lapply(1:nrow(points),
@@ -392,9 +400,9 @@ server <- function(input, output, session) {
     }
     Tplot <- reactive({
       ## add check for NA and get nearest coords if yes
-      vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+      vals <- raster::extract(r2, matrix(c(Lonx, Latx), ncol = 2))
       if(is.na(vals[1])){
-        vals <- extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+        vals <- raster::extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
       }
       
       valx=data.frame(vals[,1:length(vals)])
@@ -418,7 +426,10 @@ server <- function(input, output, session) {
       #scup 9-27 (16-22 preferred) EFH NMFS-NE-149 1999 Table 1 p.14
       #BSB 10-22 (17-21 preferred) EFH NMFS-NE-200 2007, pp.8-9
       P=ggplot(monT, aes(x=month, y=meanT))+
+        annotation_custom(grob_img1, xmin = 0, xmax = 5, ymin = 21, ymax = 28)+ #add scup_1 image
+        annotation_custom(grob_img2, xmin = 6.5, xmax = 9.5, ymin = 8, ymax = 20)+ #add bsb_2 image
         geom_line(stat = "identity", linetype=1, linewidth=2)+
+        geom_point(stat = "identity", pch=19, col='black', cex=3)+
         theme_bw() +
         theme(panel.border = element_blank(), 
               panel.grid.major = element_blank(),
@@ -762,7 +773,7 @@ server <- function(input, output, session) {
           return (coords[which.min(dists), ])
         }
       }
-      neighbour_list <- extract(raster, points,
+      neighbour_list <- raster::extract(raster, points,
                                 buffer = max_distance,
                                 cellnumbers = TRUE)
       neighbour_list <- lapply(1:nrow(points),
@@ -774,9 +785,9 @@ server <- function(input, output, session) {
     }
     Tplot <- reactive({
       ## add check for NA and get nearest coords if yes
-      vals <- extract(r2, matrix(c(Lonx, Latx), ncol = 2))
+      vals <- raster::extract(r2, matrix(c(Lonx, Latx), ncol = 2))
       if(is.na(vals[1])){
-        vals <- extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+        vals <- raster::extract(r2, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
       }
       
       valx=data.frame(vals[,1:length(vals)])
@@ -798,6 +809,8 @@ server <- function(input, output, session) {
                   meanT=mean(sst))
       
       P=ggplot(monT, aes(x=month, y=meanT))+
+        annotation_custom(grob_img1, xmin = 0, xmax = 5, ymin = 21, ymax = 28)+ #add scup_1 image
+        annotation_custom(grob_img2, xmin = 6.5, xmax = 9.5, ymin = 9, ymax = 20)+ #add bsb_2 image
         geom_line(stat = "identity", linetype=1, linewidth=2)+
         theme_bw() +
         theme(panel.border = element_blank(), 

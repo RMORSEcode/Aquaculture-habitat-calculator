@@ -129,6 +129,7 @@ NEWefh=sf::st_transform(NEWENGefh, "WGS84")
 BSBefh=MIDefh %>% dplyr::filter(SITENAME_L=="Black Sea Bass")
 SCUPefh=MIDefh %>% dplyr::filter(SITENAME_L=="Scup")
 
+
 # p <- poly2nb(st_make_valid(MIDATLefh))
 
 map("worldHires", xlim=c(-78,-68),ylim=c(36.5,45), fill=T,border=0,col="gray70")
@@ -231,12 +232,34 @@ points(NRHAbsb$geometry[[1]][[1]][4,1], NRHAbsb$geometry[[1]][[1]][4,2], pch=19,
 points(NRHAbsb$geometry[[1]][[1]][5,1], NRHAbsb$geometry[[1]][[1]][5,2], pch=19, col='purple')
 points(NRHAbsb$geometry[[1]][[1]][6,1], NRHAbsb$geometry[[1]][[1]][6,2], pch=19, col='orange')
 ## checking on distances between points
-a=c(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][3,2])
-b=c(NRHAbsb$geometry[[1]][[1]][5,1], NRHAbsb$geometry[[1]][[1]][5,2])
-lines(x=c(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][5,1]), y=c(NRHAbsb$geometry[[1]][[1]][3,2], NRHAbsb$geometry[[1]][[1]][5,2]), col='red')
-pointDistance(a,b, lonlat = T)
-a=c(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][2,2])
-b=c(NRHAbsb$geometry[[1]][[1]][6,1], NRHAbsb$geometry[[1]][[1]][6,2])
+a=c(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][3,2]) #blue
+b=c(NRHAbsb$geometry[[1]][[1]][5,1], NRHAbsb$geometry[[1]][[1]][5,2]) #purple
+b=c(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][2,2]) #green
+
+lines(x=c(NRHAbsb$geometry[[1]][[1]][3,1], NRHAbsb$geometry[[1]][[1]][2,1]), y=c(NRHAbsb$geometry[[1]][[1]][3,2], NRHAbsb$geometry[[1]][[1]][2,2]), col='red')
+raster::pointDistance(a,b, lonlat = T)
+
+
+a=c(NRHAbsb$geometry[[10]][[1]][1,1], NRHAbsb$geometry[[10]][[1]][1,2]) #red
+b=c(NRHAbsb$geometry[[10]][[1]][4,1], NRHAbsb$geometry[[10]][[1]][4,2]) #pink
+lines(x=c(NRHAbsb$geometry[[1]][[1]][1,1], NRHAbsb$geometry[[1]][[1]][4,1]), y=c(NRHAbsb$geometry[[1]][[1]][1,2], NRHAbsb$geometry[[1]][[1]][4,2]), col='red')
+raster::pointDistance(a,b, lonlat = T) # distance in meters?
+geosphere::distHaversine(a,b) # distance in meters
+geosphere::distHaversine(a,b)*1e-3 # distance in km
+
+
+# get area of one of hexbins
+x=st_area(NRHAbsb$geometry[1]) #in square meters 
+xkm=x*1e-6 # conver to square km
+st_area(NRHAbsb$geometry[1025])*1e-6
+# get diameter (longest diameter) of hexbin 
+d=(sqrt(x/2.598))*2 # in meters
+dkm=d*1e-3 # d in km
+
+### about ~20 km diameter at widest point, 9.5km length, and ~250km^2 area ###
+
+a=c(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][2,2]) #green
+b=c(NRHAbsb$geometry[[1]][[1]][6,1], NRHAbsb$geometry[[1]][[1]][6,2]) #orange
 lines(x=c(NRHAbsb$geometry[[1]][[1]][2,1], NRHAbsb$geometry[[1]][[1]][6,1]), y=c(NRHAbsb$geometry[[1]][[1]][2,2], NRHAbsb$geometry[[1]][[1]][6,2]), col='black')
 pointDistance(a,b, lonlat = T)
 ### inconsistent over x and y dimensions
@@ -258,19 +281,23 @@ pointDistance(a,b, lonlat = T)
 
 NRHAbsb$mean[which(NRHAbsb$mean==-999)]=NA
 NRHAbsb.sp=NRHAbsb %>% 
-  dplyr::filter(SEASON=="Spring") %>% 
+  dplyr::filter(SEASON=="Spring") 
+NRHAbsb.sp=NRHAbsb.sp%>% 
   dplyr::arrange(h3_ddrs) %>%
   dplyr::mutate(cpue=NRHAbsb.sp$mean/NRHAbsb.sp$grnd_t_, ID=seq(1:length(NRHAbsb.sp$mean)))
 NRHAbsb.sm=NRHAbsb %>% 
-  dplyr::filter(SEASON=="Summer") %>% 
+  dplyr::filter(SEASON=="Summer") 
+NRHAbsb.sm=NRHAbsb.sm%>% 
   dplyr::arrange(h3_ddrs) %>%
   dplyr::mutate(cpue=NRHAbsb.sm$mean/NRHAbsb.sm$grnd_t_, ID=seq(1:length(NRHAbsb.sm$mean)))
 NRHAbsb.fl=NRHAbsb %>% 
-  dplyr::filter(SEASON=="Fall") %>% 
+  dplyr::filter(SEASON=="Fall") 
+NRHAbsb.fl=NRHAbsb.fl%>% 
   dplyr::arrange(h3_ddrs) %>%
   dplyr::mutate(cpue=NRHAbsb.fl$mean/NRHAbsb.fl$grnd_t_, ID=seq(1:length(NRHAbsb.fl$mean)))
 NRHAbsb.wt=NRHAbsb %>% 
-  dplyr::filter(SEASON=="Winter") %>% 
+  dplyr::filter(SEASON=="Winter")
+NRHAbsb.wt=NRHAbsb.wt%>% 
   dplyr::arrange(h3_ddrs) %>%
   dplyr::mutate(cpue=NRHAbsb.wt$mean/NRHAbsb.wt$grnd_t_, ID=seq(1:length(NRHAbsb.wt$mean)))
 
@@ -368,6 +395,16 @@ NRHAscup.wt$habitat[which(NRHAscup.wt$cpue<=quantile(NRHAscup.wt$cpue,na.rm=T)[2
 NRHAscup.wt$habitat[which(NRHAscup.wt$cpue>quantile(NRHAscup.wt$cpue,na.rm=T)[2])]=2
 NRHAscup.wt$habitat[which(NRHAscup.wt$cpue>quantile(NRHAscup.wt$cpue,na.rm=T)[3])]=3
 NRHAscup.wt$habitat[which(NRHAscup.wt$cpue==quantile(NRHAscup.wt$cpue,na.rm=T)[1])]=0
+
+
+#save
+tt=NRHAbsb.sp
+# now try with mean instead of cpue to check for difference
+NRHAbsb.sp$habitat=0 #initialize as numeric
+NRHAbsb.sp$habitat[which(NRHAbsb.sp$mean<=quantile(NRHAbsb.sp$mean,na.rm=T)[2])]=1
+NRHAbsb.sp$habitat[which(NRHAbsb.sp$mean>quantile(NRHAbsb.sp$mean,na.rm=T)[2])]=2
+NRHAbsb.sp$habitat[which(NRHAbsb.sp$mean>quantile(NRHAbsb.sp$mean,na.rm=T)[3])]=3
+NRHAbsb.sp$habitat[which(NRHAbsb.sp$mean==quantile(NRHAbsb.sp$mean,na.rm=T)[1])]=0
 
 
 barplot(table(NRHAbsb.sp$habitat), main='Sp')
