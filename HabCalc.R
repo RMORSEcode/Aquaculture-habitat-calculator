@@ -137,7 +137,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              
                              helpText(h5("Survey-based habitat quality for black sea bass and scup at selected site:")),
                              tableOutput('habTable'),
-                             helpText(h5("Average surface water temperature by month (black line) with minimum and maximum monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
+                             # helpText(h5("Average surface water temperature by month (black line) with minimum and maximum monthly values (gray shading) at selected site. Also shown are preferred temperature ranges for black sea bass (blue shading) and scup (red shading). Note that some nearshore coastal areas may not have data coverage for water temperature:")),
+                             helpText(h5("The graph displays monthly average surface water temperatures (indicated by a black line) alongside the monthly minimum and maximum values (represented by gray shading) for the chosen location. Preferred temperature habitats for scup (red shading) and black sea bass (blue shading) are also included. Please be aware that water temperature data may be unavailable for certain nearshore coastal regions:")),
                              plotOutput("SSTplot", width="100%"), 
                              helpText(h5("Additional Structured Habitat Provided:")),
                              tableOutput('AreaTable'),
@@ -154,7 +155,7 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
-                                  p("The Aquaculture Gear Habitat Calculator can be used for new permit applications under consideratoin of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("The Aquaculture Gear Habitat Calculator can be used for new permit applications under consideration of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Farm location"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Culture method (floating gear vs. off-bottom gear vs. on-bottom)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Tidal information (sub-tidal vs tidal)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
@@ -503,6 +504,20 @@ server <- function(input, output, session) {
                                          NRHA.val$bsbSMhab[int[[1]]],
                                          NRHA.val$bsbFLhab[int[[1]]],
                                          NRHA.val$bsbWThab[int[[1]]]))
+      habtna=data.frame("Scup"=c(NA,NA,NA,NA,NA),"Black.sea.bass"=c(NA,NA,NA,NA,NA))
+      if(is.na(habt$Scup[1])){
+        habt=habtna
+      }
+      # habt$Scup[1] <- if (length(habt2$Scup[1]) > 0) habt2$Scup[1] else NA
+      # habt$Scup[2] <- if (length(habt2$Scup[2]) > 0) habt2$Scup[2] else NA
+      # habt$Scup[3] <- if (length(habt2$Scup[3]) > 0) habt2$Scup[3] else NA
+      # habt$Scup[4] <- if (length(habt2$Scup[4]) > 0) habt2$Scup[4] else NA
+      # habt$Scup[5] <- if (length(habt2$Scup[5]) > 0) habt2$Scup[5] else NA
+      # habt$Black.sea.bass[1] <- if (length(habt2$Black.sea.bass[1]) > 0) habt2$Black.sea.bass[1] else NA
+      # habt$Black.sea.bass[2] <- if (length(habt2$Black.sea.bass[2]) > 0) habt2$Black.sea.bass[2] else NA
+      # habt$Black.sea.bass[3] <- if (length(habt2$Black.sea.bass[3]) > 0) habt2$Black.sea.bass[3] else NA
+      # habt$Black.sea.bass[4] <- if (length(habt2$Black.sea.bass[4]) > 0) habt2$Black.sea.bass[4] else NA
+      # habt$Black.sea.bass[5] <- if (length(habt2$Black.sea.bass[5]) > 0) habt2$Black.sea.bass[5] else NA
       rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
       colnames(habt)=c("Scup", "Black sea bass")
       habt
@@ -663,9 +678,18 @@ server <- function(input, output, session) {
       zsall= zs1=="None"
       zb1=NRHA.val$bsbYRhab[int[[1]]]
       zball = zb1=="None"
+      # set values to 'none' if out of bounds (defaults to no habitat provided below, not using boundsmod anymore)
+      if(length(zball)==0){
+        zball=T
+      }
+      if(length(zsall)==0){
+        zsall=T
+      }
       ## compare to credit as habitat
       scupmod=ifelse((c2==F | zsall==T), 0, 1) # NO credit if area not EFH for scup OR scup absent from survey
       bsbmod=ifelse((c1==F| zball==T), 0, 1) # NO credit if area not EFH for bsb OR bsb absent from survey
+      # boundsmod=ifelse((length(zs1)==0), 0, 1) # no credit for areas outside of NRHA hexbin boundary (not used, fixed above)
+      
       AreaN=data.frame(input$cageN * input$cageL * input$cageW * bsbmod * tidemod)
       colnames(AreaN)='Square feet added'
       AreaN$`Cubic feet added`=AreaN$`Square feet added`*input$cageH
@@ -886,6 +910,10 @@ server <- function(input, output, session) {
                                          NRHA.val$bsbSMhab[int[[1]]],
                                          NRHA.val$bsbFLhab[int[[1]]],
                                          NRHA.val$bsbWThab[int[[1]]]))
+      habtna=data.frame("Scup"=c(NA,NA,NA,NA,NA),"Black.sea.bass"=c(NA,NA,NA,NA,NA))
+      if(is.na(habt$Scup[1])){
+        habt=habtna
+      }
       rownames(habt)=c("Annual", "Spring", "Summer", "Fall", "Winter")
       colnames(habt)=c("Scup", "Black sea bass")
       habt
@@ -1031,6 +1059,13 @@ server <- function(input, output, session) {
       zsall= zs1=="None"
       zb1=NRHA.val$bsbYRhab[int[[1]]]
       zball = zb1=="None"
+      # set values to 'none' if out of bounds (defaults to no habitat provided below, not using boundsmod anymore)
+      if(length(zball)==0){
+        zball=T
+      }
+      if(length(zsall)==0){
+        zsall=T
+      }
       ## compare to credit as habitat
       scupmod=ifelse((c2==F | zsall==T), 0, 1) # NO credit if area not EFH for scup OR scup absent from survey
       bsbmod=ifelse((c1==F| zball==T), 0, 1) # NO credit if area not EFH for bsb OR bsb absent from survey
