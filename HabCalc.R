@@ -75,7 +75,8 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              prettyCheckboxGroup(
                                inputId = "gearGroup",
                                label = div(strong("Culture Method:"), "Select the gear type primarily used for growing oysters (select all that apply)"),
-                               choices = list("Off-bottom cages", "Floating cages", "On-Bottom/No gear"),
+                               # choices = list("Off-bottom cages", "Floating cages", "On-Bottom/No gear"),
+                               choices = list("Off-bottom cages", "Floating cages", "Oyster condos", "Rack and bag"),
                                # choices = list("Off-bottom cages" = 1, "Floating cages" = 2, "On-Bottom/No gear" = 3),
                                outline = TRUE,
                                plain = TRUE,
@@ -100,9 +101,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                            width ="100%")
                              ),
                              # dateRangeInput("daterange", startview = "decade", div(strong("Date range:"), "Select months gear is in the water")),
+                             
                              helpText(br()),
-                             helpText(h5("Gear Quantity and Dimensions")),
-                             helpText("Please enter the average number of gear typically in the water, followed by the gear dimentions length, width, and height in feet"),
+                             helpText(h4("Gear Quantity and Dimensions")),
+                             helpText("Please enter the quantity of gear typically in the water and the gear dimensions in feet", style = "font-size:18px;"),
                              fluidRow(
                                column(3, numericInput("cageN", strong("Number of Cages"), 0, min=0, max=1000)),
                                column(3, numericInput("cageL", strong("Length of Gear (ft)"), 3, min=0, max=15)),
@@ -112,9 +114,12 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              
                              ### 2 LOCATION ###
                              helpText(h3("2) Farm Location")),
-                             helpText(h4("Farm Location: "),"Please scroll or pinch to zoom in to the farm location on the map, then click on the appropriate polygon for your site to record the coordinates.
-                                      If your site is not shown, you can drop a marker pin by clicking once on the marker pin icon and and then once again on your site to record the coordinates. To remove a marker, 
-                                      click on the trash icon and then the errant marker", style = "font-size:18px;"),
+                             # helpText(h4("Farm Location: "),"Please scroll or pinch to zoom in to the farm location on the map, then click on the appropriate polygon for your site to record the coordinates.
+                             #          If your site is not shown, you can drop a marker pin by clicking once on the marker pin icon and and then once again on your site to record the coordinates. To remove a marker, 
+                             #          click on the trash icon and then the errant marker", style = "font-size:18px;"),
+                             helpText(h4("Farm Location: "),"To record your coordinates, zoom in to your farm's location on the map and select the corresponding polygon. 
+                                      If your site is not shown, click the marker icon, then click on your location to place a pin. To delete a marker, 
+                                      click the trash icon and select the marker you wish to remove.", style = "font-size:18px;"),
                              # helpText(h4("Approximate Coordinates")),
                              # helpText(h6("Please scroll or pinch to zoom to the farm location, then click once on the marker pin and select the site to record the coordinates. To remove a marker, click on the trash icon and then the errant marker", style = "font-size:18px;"),
                              leafletOutput("mymap", width="100%", height=400) %>% withSpinner(type=1, size=2, color='#0085CA'), #0085CA #0dc5c1 color.background='white'
@@ -155,14 +160,19 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                              helpText(br()),
                              div( style = "border-style: solid; border-radius: 5px; border-color: #0085CA; background-color: #0085CA;",
                                   p("About the Calculator:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:20px; color: white;"),
-                                  p("The Aquaculture Gear Habitat Calculator can be used for new permit applications under consideration of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  # p("The Aquaculture Gear Habitat Calculator can be used for new permit applications under consideration of the environmental benefits provided by farms, as well as to increase social license for farms. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("The Aquaculture Gear Habitat Calculator supports new permit applications by highlighting the environmental advantages of farms and fostering greater social license. By providing information on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p(strong("- Farm location"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p(strong("- Culture method (floating gear vs. off-bottom gear vs. on-bottom)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p(strong("- Tidal information (sub-tidal vs tidal)"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- Tidal information"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- Gear quantity and dimensions"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                                   p("And by selecting the location of a farm on a GIS layer, information is provided on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p(strong("- Essential Fish Habitat for scup and black sea bass"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p(strong("- Bottom (sediment type) classification"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
-                                  p(strong("- Survey-based habitat classification for black sea bass and scup"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  # p("And by identifying a farm's site on a GIS layer, the tool generates data on:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- Essential Fish Habitat for black sea bass and scup"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- Survey-based habitat classification for these species"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p(strong("- Additional structured habitat provided"), style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("In addition to ancillary habitat information:", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("- Classification of bottom sediment types", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
+                                  p("- Average monthly sea surface temperature and the preferred temperature ranges for these species", style="text-align:justify; padding-left:10px; padding-right:10px; font-size:18px; color: white;"),
                              ),
                              helpText(br()),
                              tags$p(
@@ -177,10 +187,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                br(),
                                tags$p(
                                  h4("Project Team"),
-                                 tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/renee-mercaldo-allen", "Renee Mercaldo-Allen,"),
+                                 tags$a(target="_blank", href="https://www.linkedin.com/in/renee-mercaldo-allen-80a9a29b/", "Renee Mercaldo-Allen,"),
                                  tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
                                  tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
-                                 tags$a(target="_blank", href="https://coastalscience.noaa.gov/staff/christopher-schillaci/", "Chris Schillaci,"), #https://www.linkedin.com/in/chris-schillaci/
+                                 tags$a(target="_blank", href="https://www.linkedin.com/in/chris-schillaci/", "Chris Schillaci,"), #https://www.linkedin.com/in/chris-schillaci/
                                ),
                                div( style = "border-style: solid; border-radius: 10px; border-color: #0085CA; background-color: #0085CA;",
                                     p("Send questions or comments to:",style="text-align:center; padding-left:10px; padding-right:10px; font-size:16px; color: white"),
@@ -836,6 +846,7 @@ server <- function(input, output, session) {
         annotation_custom(grob_img1, xmin = 0, xmax = 5, ymin = 21, ymax = 28)+ #add scup_1 image
         annotation_custom(grob_img2, xmin = 6.5, xmax = 9.5, ymin = 9, ymax = 20)+ #add bsb_2 image
         geom_line(stat = "identity", linetype=1, linewidth=2)+
+        geom_point(stat = "identity", pch=19, col='black', cex=3)+
         theme_bw() +
         theme(panel.border = element_blank(), 
               panel.grid.major = element_blank(),
