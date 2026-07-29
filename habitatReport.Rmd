@@ -1,7 +1,7 @@
 ---
 title: |
   ![](noaa-emblem-rgb-sm2-2022.png){width=0.75in}
-  Aquaculture Habitat Calculator
+  Aquaculture Gear Habitat Calculator
 output: pdf_document
 date: "`r format(Sys.Date(),'%B %e, %Y')`"
 params: 
@@ -16,6 +16,7 @@ params:
   Location: NA
   Depth: NA
   gear: NA
+  remGear: NA
   gearIn: NA
   gearOut: NA
   Farm: NA
@@ -27,7 +28,7 @@ params:
   Latx: NA
 ---
 
-```{r, echo = F, warning=FALSE, echo=FALSE}
+```{r, echo = F, warning=FALSE, message=FALSE}
 library(knitr)
 opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
 ```
@@ -62,7 +63,7 @@ knitr::knit_hooks$set( output = function(x, options) {
 knitr::opts_template$set("kill_prefix"=list(comment=NA, null_prefix=TRUE))
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 knitr::opts_chunk$set(opts.label="kill_prefix")
 # knitr::opts_chunk$set(message = FALSE)
 ```
@@ -76,30 +77,32 @@ knitr::opts_chunk$set(opts.label="kill_prefix")
 **Name of the water body where the farm is located:**  
 `r params[["Location"]]`
 
-**Tidal zone information:**
+**Tidal zone information:**  
 `r params[["tidal"]]`
 
-**Average depth at farm site during low tide (MLLW):**
-`r params[["depth"]]`
+**Average depth at farm site during low tide (MLLW):**  
+`r params[["Depth"]]`
 
-**Gear type primarily used for growing oysters:**
+**Gear type primarily used for growing oysters:**  
 `r params[["gear"]]`
 
-**Month gear typically goes into the water:**
-`r params[["gearIn"]]`
+`r if(params[["remGear"]]==F) {"**Gear is not typically removed seasonally at this site:**  "}`
+`r if(params[["remGear"]]==T) {"**Gear is removed seasonally at this site:**  "}`
+`r if(params[["remGear"]]==T) {"**Month gear typically goes into the water:**  "}`
+`r if(params[["remGear"]]==T) {params[["gearIn"]]}`  
+`r if(params[["remGear"]]==T) {"**Month gear is typically removed from the water:**  "}`
+`r if(params[["remGear"]]==T) {params[["gearOut"]]}`  
 
-**Month gear is typically removed from the water:**
-`r params[["gearOut"]]`
-
-**Gear Quantity:**
+**Gear Quantity (number of units):**  
 `r params[["Number"]]`
 
-**Gear Dimensions (Length, Width, Height (ft)):**
+**Gear Dimensions (Length, Width, Height (ft)):**  
 `r params[["Length"]]` **x** `r params[["Width"]]` **x** `r params[["Height"]]`  
 
-**Farm location (latitude, longitude):**  
+# **Farm location (latitude, longitude):**  
 ```{r, tidy='styler', echo=FALSE}
-knitr::kable(params[["loctable"]])
+knitr::kable(params[["loctable"]],
+             caption="Farm location and area")
 ```
 # **Essential Fish Habitat at selected site**  
 ```{r, tidy='styler', echo=FALSE}
@@ -107,10 +110,10 @@ knitr::kable(params[["tableEFH"]],
              caption="Essential Fish Habitat")
 ```
 
-# **Survey-based habitat quality for black sea bass and scup at selected site**  
+# **Survey-based presence of black sea bass and scup at selected site**  
 ```{r, tidy='styler', echo=FALSE}
 knitr::kable(params[["tableSurvey"]], 
-             caption="Survey-based presence")
+             caption="Survey-based Presence")
 ```
 
 # **Sediment classification at selected site**  
