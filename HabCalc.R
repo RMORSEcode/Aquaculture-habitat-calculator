@@ -13,7 +13,8 @@ library(shiny)
 library(bslib)
 library(leaflet)
 library(leaflet.extras)
-library(sf); sf_use_s2(FALSE)
+library(sf); sf_use_s2(TRUE)
+# library(sf); sf_use_s2(FALSE)
 library(gh)
 library(shinycssloaders)
 library(shinyWidgets)
@@ -187,10 +188,10 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                br(),
                                tags$p(
                                  h4("Project Team"),
+                                 tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse,"),
                                  tags$a(target="_blank", href="https://www.linkedin.com/in/renee-mercaldo-allen-80a9a29b/", "Renee Mercaldo-Allen,"),
-                                 tags$a(target="_blank", href="https://www.fisheries.noaa.gov/contact/ryan-morse-phd","Ryan Morse"),
                                  tags$a(target="_blank", href="https://www.linkedin.com/in/julie-m-rose/", "Julie Rose,"),
-                                 tags$a(target="_blank", href="https://www.linkedin.com/in/chris-schillaci/", "Chris Schillaci,"), #https://www.linkedin.com/in/chris-schillaci/
+                                 tags$a(target="_blank", href="https://www.linkedin.com/in/chris-schillaci/", "Chris Schillaci"), #https://www.linkedin.com/in/chris-schillaci/
                                ),
                                div( style = "border-style: solid; border-radius: 10px; border-color: #0085CA; background-color: #0085CA;",
                                     p("Send questions or comments to:",style="text-align:center; padding-left:10px; padding-right:10px; font-size:16px; color: white"),
@@ -262,23 +263,31 @@ server <- function(input, output, session) {
   load("NRHA.val.rdata")
   
   ### read in tidal range tif file, cropped to NES extent (depths are in meters)
-  tidalRangeM=raster('cropGlobalTidalRange3.tif')
+  # tidalRangeM=raster('cropGlobalTidalRange3.tif') #2014 res=0.06213324 0.06212916
+  tidalRangeM=raster('FES2022bClip.tif') #2022 res=0.03333333 0.03333333
   
   ### read in aquaculture shapefile for northeast USA
-  aquaculture=sf::st_read("Aquaculture.shp")
-  NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
+  
+  # aquaculture=sf::st_read("Aquaculture.shp")
+  # NESaquaculture=sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
+  NESaquaculture=sf::st_read("Aquaculture.shp") %>%
+    sf::st_crop(aquaculture, xmin=-77, ymin=35, xmax=-66.98481, ymax=60.83483) %>% 
+    sf::st_transform(crs = "+proj=longlat +datum=WGS84") %>%
     # st_transform(., +proj=laea +lon_0=-71.8945313 +lat_0=40.5845014 +datum=WGS84 +units=m +no_defs) %>%
     dplyr::filter(biotype=="Shellfish") %>%
     dplyr::mutate(centroid=sf::st_centroid(geometry))
   
   ### read in EFH shapefile and filter to just scup and black sea bass
-  MIDATLefh=sf::read_sf("midatl_efh.shp")
-  MIDefh=sf::st_transform(MIDATLefh, "WGS84") %>% 
+  MIDATLefh=sf::read_sf("midatl_efh.shp") #%>%
+  # sf::st_transform(crs = "+proj=longlat +datum=WGS84") %>%
+  MIDefh=sf::st_transform(MIDATLefh, "WGS84") %>%
     # st_transform(., +proj=laea +lon_0=-71.8945313 +lat_0=40.5845014 +datum=WGS84 +units=m +no_defs) %>%
-    dplyr::filter(SITENAME_L=="Black Sea Bass"| SITENAME_L=="Scup")
+    dplyr::filter(SITENAME_L=="Black Sea Bass"| SITENAME_L=="Scup") %>%
+    sf::st_make_valid()
   
   ### read in ConMap sediment classification shapefile
-  Conmap=sf::st_read("Continental_Margin_Mapping_Program_(CONMAP).shp")
+  Conmap=sf::st_read("Continental_Margin_Mapping_Program_(CONMAP).shp") %>%
+    sf::st_transform(.,st_crs(MIDefh))
   Conmap$SEDNAME=NA
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='br')]='Bedrock'
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='cl')]='Clay'
@@ -289,6 +298,7 @@ server <- function(input, output, session) {
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-cl/st')]='Sand-clay/silt'
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd-st/cl')]='Sand-silt/clay'
   Conmap$SEDNAME[which(Conmap$SEDIMENT=='sd/st/cl')]='Sand/silt/clay'
+  # Conmap <- st_transform(Conmap, st_crs(MIDefh))
   
   ### add fish image to SST plot
   imgsc <- png::readPNG("scup_1.png")
@@ -639,7 +649,11 @@ server <- function(input, output, session) {
       )
     
     tidedata <- reactive({
-      trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      # trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      trangem <- raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      if(is.na(trangem[1])){
+        trangem <- raster::extract(tidalRangeM, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+      }
       trangeft=trangem*3.28084
       tides=data.frame(trangeft)
       colnames(tides)="Tidal Range (ft)"
@@ -1036,7 +1050,11 @@ server <- function(input, output, session) {
       )
     
     tidedata <- reactive({
-      trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      # trangem=raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      trangem <- raster::extract(tidalRangeM, matrix(c(Lonx, Latx), ncol = 2))
+      if(is.na(trangem[1])){
+        trangem <- raster::extract(tidalRangeM, nearestLand(matrix(c(Lonx, Latx), ncol = 2), r2, 25000))
+      }
       trangeft=trangem*3.28084
       tides=data.frame(trangeft)
       colnames(tides)="Tidal Range (ft)"
