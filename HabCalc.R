@@ -152,6 +152,12 @@ ui <- fluidPage(style = 'margin-left: 10%; margin-right: 10%;',
                                outputId = "downloader",
                                label = "Generate PDF Report"
                              ),
+                             br(),
+                             downloadButton(
+                               outputId = "download",
+                               label = "Download Customized Infographic"
+                             ),
+                             
                     ),
                     
                     tabPanel("About", 
@@ -730,6 +736,49 @@ server <- function(input, output, session) {
         Rarea(),
         rownames=T
       )
+    
+    infoplot <- function(){
+      req(input$farmname)
+      req(input$projloc)
+      nameloc=paste(input$farmname,", ",input$projloc, sep='')
+      dfn=Rarea()
+      img2<-readPNG('FarmHabitat_edit2_2500_1666.png')
+      #get size
+      h<-dim(img2)[1]
+      w<-dim(img2)[2]
+      par(mar=c(2,0,2,0), xpd=T, mgp=c(0,0,0), oma=c(2,0,2,0), ann=F, xaxs="i", yaxs="i", bg=NA)
+      plot.new()
+      plot.window(0:1, 0:1)
+      #fill plot with image
+      usr<-par("usr")    
+      QR1=png::readPNG("AHClinkQR.png")
+      Z=rasterImage(img2, usr[1], usr[3], usr[2], usr[4])
+      text(0.5, 0.75, nameloc, adj = c(0.5, 0.5), cex=1.1, col='yellow', pos=1)
+      text(0,0.6, "Square Feet of Additional Structured Habitat Provided", cex=1.1, col='white', pos=4)
+      text(0.05,0.48, "Black sea bass:", cex=1.1, col='white', pos=4)
+      text(0.15,0.40, prettyNum(dfn$`Square feet added`[1], big.mark = ",", scientific = FALSE), cex=1.5, col='yellow')
+      text(0.05,0.30, "Scup:", cex=1.1, col='white', pos=4)
+      text(0.15,.22, prettyNum(dfn$`Square feet added`[2], big.mark = ",", scientific = FALSE), cex=1.5, col='yellow')
+      text(0.56,0.77,"https://connect.fisheries.noaa.gov/AGHC/", cex=0.7, col='black', pos=4)
+      # mtext(input$farmname, side=3, line=-1, outer=T, cex=ifelse(nchar(input$farmname)<40,1.3,1), font=2, col='black') #FF9900 #3399FF #003366 #003399
+      # rasterImage(QR1,0.9,0.75,1,0.95)
+      rasterImage(QR1,0.9,0.8,1,0.9)
+      Z
+      # dev.off()
+      # })
+    }
+    
+    ## save infographic to file
+    output$download <- downloadHandler(
+      filename = paste0("Infographic_",Sys.Date(),".png"),
+      content = function(file) {
+        png(file, width = 1000,
+            height = 1000,
+            res = 200)
+        infoplot()
+        dev.off()
+      }) 
+    
     output$downloader <- 
       downloadHandler(
         paste0(Sys.Date(),"_Oyster_Farm_Habitat_Report.pdf"),

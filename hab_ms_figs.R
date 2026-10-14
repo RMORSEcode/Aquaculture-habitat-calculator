@@ -51,7 +51,7 @@ stationsX$Observation[stationsX$Site=="Martha's Vineyard"]='Direct Counts'
 
 
 wd1='C:/Users/ryan.morse/Documents/Aquaculture/Shellfish permitting and ecosystem services/Shellfish Calculators/Habitat/Manuscript/'
-tiff(paste0(wd1,"Fig1map_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
+tiff(paste0(wd1,"Fig1mapb_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
      compression = "lzw", res = 300)
 ggplot(data = east_coast_sf) +
   geom_sf(fill = "gray80", color = "black", linewidth = 0.25) +
@@ -610,7 +610,11 @@ dev.off()
 
 
 ### plotting OISST for milford
-netCDF_file <- "sst.mon.mean.nc.nc4"
+check=sf::st_point(c(-73.062097, 41.189598)) # Milford dense cage farm
+latx=41.189598
+lonx=-73.062097
+# netCDF_file <- "sst.mon.mean.nc.nc4"
+netCDF_file <-"C:/Users/ryan.morse/Documents/GitHub/Aquaculture-habitat-calculator/sst.mon.mean.nc.nc4"
 nc1 <- nc_open(netCDF_file)
 time <- ncvar_get(nc1, "time")
 nc_close(nc1)
@@ -624,14 +628,17 @@ valx$time=time
 colnames(valx)=c('sst', 'time')
 valx$month=as.numeric(format(time, "%m"))
 valx$year=as.numeric(format(time, "%Y"))
-monT=valx %>% 
-  dplyr::filter(year!=2025) %>%
+valx2=valx %>% dplyr::filter(year!=2025)
+valx2=valx2 %>% dplyr::filter(year!=1981)
+
+monT=valx2 %>% 
+  # dplyr::filter(year!=2025) %>%
   group_by(month) %>%
   summarize(minT=min(sst),
             maxT=max(sst),
             meanT=mean(sst))
-yearT=valx %>% 
-  dplyr::filter(year!=2025) %>%
+yearT=valx2 %>% 
+  # dplyr::filter(year!=2025) %>%
   group_by(year) %>%
   summarize(minT=min(sst),
             maxT=max(sst),
@@ -640,6 +647,7 @@ yearT=valx %>%
 ## Plot monthly
 P=ggplot(monT, aes(x=month, y=meanT))+
   geom_line(stat = "identity", linetype=1, linewidth=2)+
+  geom_point(stat = "identity", pch=19, col='black', cex=3)+
   # theme_minimal()+
   theme_bw() +
   theme(panel.border = element_blank(), 
@@ -649,6 +657,12 @@ P=ggplot(monT, aes(x=month, y=meanT))+
   ylim(-5,30)+
   ylab('Monthly Surface Temperature (°C)')+
   xlab("Month")+
+  annotate("text", x=11, y=0, label="Charles Island Oyster Farm", hjust = 1, fontface="italic", size = 4)+
+  # annotate("text", x=11, y=-1.50, label="-73.069132, 41.189929", hjust = 1)+
+  annotate("text", x=c(9,9.1,11), y=-1.50, label=c(lonx,',', latx), hjust = 1, size = 4)+
+  annotate("text", x=11, y=-3, label="Milford, CT", hjust = 1, size = 4)+
+  annotate("text", x=1.5, y=25, label="Scup", hjust = 0, size = 5)+
+  annotate("text", x=1.5, y=16, label="Black sea bass", hjust = 0, size = 5)+
   scale_x_continuous(breaks=c(2,4,6,8,10,12)) +
   theme(axis.title.x = element_text(size = 16),
         axis.text.x = element_text(size = 14),
@@ -657,7 +671,8 @@ P=ggplot(monT, aes(x=month, y=meanT))+
 P=P+geom_ribbon(aes(ymin=`minT`, ymax=`maxT`), linetype=2, alpha=0.1)
 P=P+geom_ribbon(aes(ymin=9, ymax=27), linetype=2, alpha=0.1, fill='#F8766D')
 P=P+geom_ribbon(aes(ymin=10, ymax=22), linetype=2, alpha=0.1, fill='#619CFF')
-tiff(paste0(wd1,"//Figx6_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
+# p=P+annotate("text", )
+tiff(paste0(wd1,"Figx6b_Morse_et_al_15_15.tiff"), height = 15, width = 15, units = 'cm', 
      compression = "lzw", res = 300)
 P
 dev.off()
@@ -669,10 +684,30 @@ legend('topleft', lty=c(1,1,1), lwd=c(1,2,1), legend=c('Max Temp', 'Avg Temp', '
 abline(h=11, lty=3)
 abline(h=22, lty=3)
 ## Plot annual
-plot(yearT$minT~yearT$year, type='l', ylim=c(0,30), lty=1, lwd=1, col='blue', ylab='Annual Temperature (°C)', xlab='Month', las=1, bty='l')
-lines(yearT$maxT~yearT$year, lty=1, lwd=1, col='red')
+plot(yearT$minT~yearT$year, type='l', ylim=c(0,30), lwd=2, col='blue', ylab='Annual Temperature (°C)', xlab='Month', las=1, bty='l')
+lines(yearT$maxT~yearT$year, lty=1, col='red', lwd=2)
 lines(yearT$meanT~yearT$year, lty=1, col='gray30', lwd=2)
 legend('topleft', lty=c(1,1,1), lwd=c(1,2,1), legend=c('Max Temp', 'Avg Temp', 'Min Temp'), col=c('red', 'gray30', 'blue'), bty='n')
-# plot(valx$sst~valx$time, type='l', ylab='SST', xaxt = "n")
-# axis(1, valx$date, format(valx$time, "%Y-%m"),cex.axis = .7)
-plot(valx$sst~valx$time, type='l', ylab='SST', xlab='Date')
+mmod=lm(yearT$meanT~yearT$year)
+p_val <- summary(mmod)$coefficients[2, 4]
+if (p_val < 0.05) {
+  abline(mmod, col='black', lwd=1, lty=2)
+}
+mxmod=lm(yearT$maxT~yearT$year)
+p_valmx <- summary(mxmod)$coefficients[2, 4]
+if (p_valmx < 0.05) {
+  abline(mxmod, col='red', lwd=1, lty=2)
+}
+mnmod=lm(yearT$minT~yearT$year)
+p_valmn <- summary(mnmod)$coefficients[2, 4]
+if (p_valmn < 0.05) {
+  abline(mnmod, col='blue', lwd=1, lty=2)
+}
+
+plot(valx2$sst~valx2$time, type='l', ylab='SST', xlab='Date')
+mmod=lm(valx2$sst~valx2$time)
+p_val <- summary(mmod)$coefficients[2, 4]
+if (p_val < 0.05) {
+  abline(mmod, col='red', lwd=2, lty=2)
+}
+modT=predict(mmod, valx2$time)
